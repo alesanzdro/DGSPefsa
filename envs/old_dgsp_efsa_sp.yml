@@ -1,0 +1,12 @@
+name: dgsp_efsa_sp
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - confindr=0.7.4
+  - mash=2.2
+  - gsl=2.5
+  - seqsero2=1.2.1
+  - lissero=0.4.9
+  - nextflow=0.27.0
+  - conda-forge::ncurses

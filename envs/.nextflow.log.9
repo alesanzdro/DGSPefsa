@@ -1,0 +1,14 @@
+abr-13 20:12:11.932 [main] DEBUG nextflow.cli.Launcher - Setting http proxy: [proxy.san.gva.es, 8080]
+abr-13 20:12:11.956 [main] DEBUG nextflow.cli.Launcher - Setting https proxy: [proxy.san.gva.es, 8080]
+abr-13 20:12:11.956 [main] DEBUG nextflow.cli.Launcher - $> /software/miniconda3/envs/dgsp_efsa_sp/bin/nextflow run ctmrbio/BACTpipe --mashscreen_database /ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/mash/refseq.genomes.k21s1000.msh --reads /ALMEIDA/PROJECTS/BACTERIAS/DGSP/analysis/230210_LSPV002/out/0_fastq/22_LM_03313_1.fastq.gz /ALMEIDA/PROJECTS/BACTERIAS/DGSP/analysis/230210_LSPV002/out/0_fastq/22_LM_03313_2.fastq.gz
+abr-13 20:12:11.986 [main] INFO  nextflow.cli.CmdRun - N E X T F L O W  ~  version 0.27.0
+abr-13 20:12:12.074 [main] DEBUG nextflow.scm.AssetManager - Too bad! Can't find any provider from git config. Check file `/software/miniconda3/envs/dgsp_efsa_sp/share/nextflow/assets/ctmrbio/BACTpipe/.git/config`
+abr-13 20:12:12.077 [main] DEBUG nextflow.cli.Launcher - Operation aborted
+nextflow.exception.AbortOperationException: Corrupted git repository at path: /software/miniconda3/envs/dgsp_efsa_sp/share/nextflow/assets/ctmrbio/BACTpipe
+	at nextflow.scm.AssetManager.validateProjectDir(AssetManager.groovy:190)
+	at nextflow.scm.AssetManager.build(AssetManager.groovy:132)
+	at nextflow.scm.AssetManager.<init>(AssetManager.groovy:111)
+	at nextflow.cli.CmdRun.getScriptFile(CmdRun.groovy:281)
+	at nextflow.cli.CmdRun.run(CmdRun.groovy:204)
+	at nextflow.cli.Launcher.run(Launcher.groovy:427)
+	at nextflow.cli.Launcher.main(Launcher.groovy:581)

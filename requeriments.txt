@@ -1,0 +1,93 @@
+
+
+# MASH
+mkdir /ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/mash
+cd /ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/mash
+#wget https://obj.umiacs.umd.edu/mash/screen/RefSeq88n.msh.gz
+wget https://gembox.cbcb.umd.edu/mash/refseq.genomes.k21s1000.msh
+
+
+# BACTIPE
+cd /ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources
+wget https://github.com/ctmrbio/BACTpipe/archive/refs/tags/v2.7.0.zip
+unzip v2.7.0.zip
+rm v2.7.0.zip
+
+
+
+mamba env create -f dgsp_efsa_sp.yml
+
+
+cd /software/miniconda3/envs/dgsp_efsa_sp/bin
+wget https://github.com/nextflow-io/nextflow/releases/download/v0.26.0/nextflow
+chmod 774 nextflow
+nextflow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+################### INTENTO CREAR BASE DE DATOS ACTUALIZADA MASH
+# Get the list of assemblies:
+wget ftp.ncbi.nlm.nih.gov/genomes/refseq/assembly_summary_refseq.txt 
+Parse the addresses of complete genomes from it (right now n = 44632):
+#awk -F '\t' '{if($12=="Complete Genome") print $0}' assembly_summary_refseq.txt > assembly_summary_refseq_complete_genomes.txt
+#awk -F '\t' '{print $20}' assembly_summary_refseq_complete_genomes.txt > assembly_summary_refseq_complete_genomes_link.txt
+
+# 13637 sequences
+awk -F '\t' '{if($12=="Complete Genome") print $0}' assembly_summary_refseq.txt | grep "Salmonella\|Listeria\|Campylobacter\|Escherichia\|Enterococcus\|Enterobacter\|Yersinia\|Klebsiella\|Neisseria\|Treponema\|Staphylococcus\|Streptococcus\|coronavirus\|Influenza\|neumovirus\|hinovirus\|denovirus\|arainfluenza\|aemophilus\|ycobacterium\|eishmania\|lavivirus\|lasmodium\|Ebola" > assembly_summary_refseq_complete_selected.txt
+awk -F '\t' '{print $20}' assembly_summary_refseq_complete_selected.txt > assembly_summary_refseq_complete_selected_link.txt
+
+
+# Make a dir for data
+mkdir refseq
+
+# Fetch data
+for next in $(cat assembly_summary_refseq_complete_selected_link.txt); do wget -P refseq "$next"/${next##*/}_genomic.fna.gz; done >> download-refseq.log 2>&1
+
+
+for next in $(cat assembly_summary_refseq_complete_selected_link.txt); do cp refseq_full/${next##*/}* refseq; done
+
+# Extract data
+
+rm refseq/GCF_000006645.1_ASM664v1_genomic.fna.gz
+gunzip refseq/*.gz
+
+#Concatenate data
+
+cat refseq/*.fna > all_complete_refseq.fasta
+
+
+wget https://obj.umiacs.umd.edu/mash/screen/RefSeq88n.msh.gz
+
+wget https://gembox.cbcb.umd.edu/mash/refseq.genomes.k21s1000.msh
+
+# otro https://gitlab.bfr.berlin/bfr_bioinformatics/bakcharak_resources/-/raw/main/databases/mash.tar.gz

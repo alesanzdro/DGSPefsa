@@ -1,0 +1,200 @@
+abr-13 20:36:00.827 [main] DEBUG nextflow.cli.Launcher - Setting http proxy: [proxy.san.gva.es, 8080]
+abr-13 20:36:00.851 [main] DEBUG nextflow.cli.Launcher - Setting https proxy: [proxy.san.gva.es, 8080]
+abr-13 20:36:00.851 [main] DEBUG nextflow.cli.Launcher - $> /software/miniconda3/envs/dgsp_efsa_sp/bin/nextflow run /ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/BACTpipe-2.7.0/bactpipe.nf --mashscreen_database /ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/mash/refseq.genomes.k21s1000.msh --reads /ALMEIDA/PROJECTS/BACTERIAS/DGSP/analysis/230210_LSPV002/out/0_fastq/22_LM_03313_{1,2}.fastq.gz --outdir p
+abr-13 20:36:00.881 [main] INFO  nextflow.cli.CmdRun - N E X T F L O W  ~  version 0.27.0
+abr-13 20:36:00.890 [main] INFO  nextflow.cli.CmdRun - Launching `/ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/BACTpipe-2.7.0/bactpipe.nf` [sharp_archimedes] - revision: 46edd98913
+abr-13 20:36:00.898 [main] DEBUG nextflow.config.ConfigBuilder - Found config base: /ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/BACTpipe-2.7.0/nextflow.config
+abr-13 20:36:00.899 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/BACTpipe-2.7.0/nextflow.config
+abr-13 20:36:01.053 [main] DEBUG nextflow.config.ConfigBuilder - Setting config profile: 'standard'
+abr-13 20:36:01.166 [main] DEBUG nextflow.Session - Session uuid: fcde9dca-1141-4b52-9afd-91afdcd8635d
+abr-13 20:36:01.167 [main] DEBUG nextflow.Session - Run name: sharp_archimedes
+abr-13 20:36:01.167 [main] DEBUG nextflow.Session - Executor pool size: 28
+abr-13 20:36:01.175 [main] DEBUG nextflow.cli.CmdRun - 
+  Version: 0.27.0 build 4751
+  Modified: 09-01-2018 10:18 UTC (11:18 CEST)
+  System: Linux 5.15.0-56-generic
+  Runtime: Groovy 2.4.13 on OpenJDK 64-Bit Server VM 1.8.0_112-b16
+  Encoding: UTF-8 (UTF-8)
+  Process: 2162635@almeida [127.0.1.1]
+  CPUs: 28 - Mem: 125,5 GB (56,6 GB) - Swap: 59,6 GB (59,3 GB)
+abr-13 20:36:01.191 [main] DEBUG nextflow.Session - Work-dir: /ALMEIDA/PROJECTS/BACTERIAS/DGSP/DGSPefsa/envs/work [ext2/ext3]
+abr-13 20:36:01.284 [main] DEBUG nextflow.Session - Session start invoked
+abr-13 20:36:01.289 [main] DEBUG nextflow.processor.TaskDispatcher - Dispatcher > start
+abr-13 20:36:01.290 [main] DEBUG nextflow.script.ScriptRunner - > Script parsing
+abr-13 20:36:01.555 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+abr-13 20:36:01.557 [main] INFO  nextflow.Nextflow - ============================================================
+abr-13 20:36:01.558 [main] INFO  nextflow.Nextflow -                           BACTpipe                          
+abr-13 20:36:01.558 [main] INFO  nextflow.Nextflow -                        Version 2.7.0                        
+abr-13 20:36:01.558 [main] INFO  nextflow.Nextflow -           Bacterial whole genome analysis pipeline          
+abr-13 20:36:01.558 [main] INFO  nextflow.Nextflow -               https://bactpipe.readthedocs.io               
+abr-13 20:36:01.558 [main] INFO  nextflow.Nextflow - ============================================================
+abr-13 20:36:01.559 [main] INFO  nextflow.Nextflow -             Running with the following settings:            
+abr-13 20:36:01.560 [main] INFO  nextflow.Nextflow -          mashscreen_database: /ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/mash/refseq.genomes.k21s1000.msh
+abr-13 20:36:01.560 [main] INFO  nextflow.Nextflow -                        reads: /ALMEIDA/PROJECTS/BACTERIAS/DGSP/analysis/230210_LSPV002/out/0_fastq/22_LM_03313_{1,2}.fastq.gz
+abr-13 20:36:01.560 [main] INFO  nextflow.Nextflow -                       outdir: p
+abr-13 20:36:01.560 [main] INFO  nextflow.Nextflow - profiles_that_require_project: [rackham]
+abr-13 20:36:01.560 [main] INFO  nextflow.Nextflow -                      project: 
+abr-13 20:36:01.560 [main] INFO  nextflow.Nextflow -               clusterOptions: false
+abr-13 20:36:01.560 [main] INFO  nextflow.Nextflow -                   output_dir: BACTpipe_results
+abr-13 20:36:01.560 [main] INFO  nextflow.Nextflow -  ignore_contamination_screen: false
+abr-13 20:36:01.561 [main] INFO  nextflow.Nextflow -               bbduk_adapters: adapters
+abr-13 20:36:01.561 [main] INFO  nextflow.Nextflow -                 bbduk_minlen: 30
+abr-13 20:36:01.561 [main] INFO  nextflow.Nextflow -                  bbduk_qtrim: rl
+abr-13 20:36:01.561 [main] INFO  nextflow.Nextflow -                  bbduk_trimq: 10
+abr-13 20:36:01.561 [main] INFO  nextflow.Nextflow -                  bbduk_ktrim: r
+abr-13 20:36:01.561 [main] INFO  nextflow.Nextflow -                      bbduk_k: 30
+abr-13 20:36:01.561 [main] INFO  nextflow.Nextflow -                   bbduk_mink: 11
+abr-13 20:36:01.561 [main] INFO  nextflow.Nextflow -                  bbduk_hdist: 1
+abr-13 20:36:01.561 [main] INFO  nextflow.Nextflow -          bbduk_trimbyoverlap: trimbyoverlap
+abr-13 20:36:01.561 [main] INFO  nextflow.Nextflow -        bbduk_trimpairsevenly: trimpairsevenly
+abr-13 20:36:01.561 [main] INFO  nextflow.Nextflow -                shovill_depth: 100
+abr-13 20:36:01.561 [main] INFO  nextflow.Nextflow -                shovill_kmers: 31,33,55,77,99,127
+abr-13 20:36:01.561 [main] INFO  nextflow.Nextflow -               shovill_minlen: 500
+abr-13 20:36:01.561 [main] INFO  nextflow.Nextflow -                prokka_evalue: 1e-09
+abr-13 20:36:01.561 [main] INFO  nextflow.Nextflow -               prokka_kingdom: Bacteria
+abr-13 20:36:01.561 [main] INFO  nextflow.Nextflow -             prokka_reference: 
+abr-13 20:36:01.562 [main] INFO  nextflow.Nextflow -            prokka_gram_stain: 
+abr-13 20:36:01.562 [main] INFO  nextflow.Nextflow - ============================================================
+abr-13 20:36:01.569 [main] DEBUG nextflow.Channel - files for syntax: glob; folder: /ALMEIDA/PROJECTS/BACTERIAS/DGSP/analysis/230210_LSPV002/out/0_fastq/; pattern: 22_LM_03313_{1,2}.fastq.gz; options: null
+abr-13 20:36:01.658 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `screen_for_contaminants` for process `screen_for_contaminants`
+abr-13 20:36:01.658 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `bbduk` for process `screen_for_contaminants`
+abr-13 20:36:01.658 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `fastqc` for process `screen_for_contaminants`
+abr-13 20:36:01.658 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `shovill` for process `screen_for_contaminants`
+abr-13 20:36:01.658 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `prokka` for process `screen_for_contaminants`
+abr-13 20:36:01.658 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `multiqc` for process `screen_for_contaminants`
+abr-13 20:36:01.685 [main] DEBUG nextflow.processor.ProcessFactory - << taskConfig executor: local
+abr-13 20:36:01.686 [main] DEBUG nextflow.processor.ProcessFactory - >> processorType: 'local'
+abr-13 20:36:01.692 [main] DEBUG nextflow.executor.Executor - Initializing executor: local
+abr-13 20:36:01.693 [main] INFO  nextflow.executor.Executor - [warm up] executor > local
+abr-13 20:36:01.698 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=28; memory=125,5 GB; capacity=28; pollInterval=100ms; dumpInterval=5m
+abr-13 20:36:01.701 [main] DEBUG nextflow.processor.TaskDispatcher - Starting monitor: LocalPollingMonitor
+abr-13 20:36:01.701 [main] DEBUG n.processor.TaskPollingMonitor - >>> barrier register (monitor: local)
+abr-13 20:36:01.703 [main] DEBUG nextflow.executor.Executor - Invoke register for executor: local
+abr-13 20:36:01.721 [main] DEBUG nextflow.Session - >>> barrier register (process: screen_for_contaminants)
+abr-13 20:36:01.729 [main] DEBUG nextflow.processor.TaskProcessor - Creating *combiner* operator for each param(s) at index(es): [1]
+abr-13 20:36:01.734 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > screen_for_contaminants -- maxForks: 28
+abr-13 20:36:01.747 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `screen_for_contaminants` for process `concatenate_mash_screen_results`
+abr-13 20:36:01.747 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `bbduk` for process `concatenate_mash_screen_results`
+abr-13 20:36:01.747 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `fastqc` for process `concatenate_mash_screen_results`
+abr-13 20:36:01.747 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `shovill` for process `concatenate_mash_screen_results`
+abr-13 20:36:01.747 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `prokka` for process `concatenate_mash_screen_results`
+abr-13 20:36:01.747 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `multiqc` for process `concatenate_mash_screen_results`
+abr-13 20:36:01.753 [main] DEBUG nextflow.processor.ProcessFactory - << taskConfig executor: local
+abr-13 20:36:01.753 [main] DEBUG nextflow.processor.ProcessFactory - >> processorType: 'local'
+abr-13 20:36:01.753 [main] DEBUG nextflow.executor.Executor - Initializing executor: local
+abr-13 20:36:01.754 [main] DEBUG nextflow.Session - >>> barrier register (process: concatenate_mash_screen_results)
+abr-13 20:36:01.754 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > concatenate_mash_screen_results -- maxForks: 28
+abr-13 20:36:01.761 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `screen_for_contaminants` for process `bbduk`
+abr-13 20:36:01.761 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `bbduk` for process `bbduk`
+abr-13 20:36:01.761 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `fastqc` for process `bbduk`
+abr-13 20:36:01.762 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `shovill` for process `bbduk`
+abr-13 20:36:01.762 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `prokka` for process `bbduk`
+abr-13 20:36:01.762 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `multiqc` for process `bbduk`
+abr-13 20:36:01.764 [main] DEBUG nextflow.processor.ProcessFactory - << taskConfig executor: local
+abr-13 20:36:01.764 [main] DEBUG nextflow.processor.ProcessFactory - >> processorType: 'local'
+abr-13 20:36:01.765 [main] DEBUG nextflow.executor.Executor - Initializing executor: local
+abr-13 20:36:01.765 [main] DEBUG nextflow.Session - >>> barrier register (process: bbduk)
+abr-13 20:36:01.765 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > bbduk -- maxForks: 28
+abr-13 20:36:01.768 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `screen_for_contaminants` for process `fastqc`
+abr-13 20:36:01.769 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `bbduk` for process `fastqc`
+abr-13 20:36:01.769 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `fastqc` for process `fastqc`
+abr-13 20:36:01.769 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `shovill` for process `fastqc`
+abr-13 20:36:01.769 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `prokka` for process `fastqc`
+abr-13 20:36:01.769 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `multiqc` for process `fastqc`
+abr-13 20:36:01.771 [main] DEBUG nextflow.processor.ProcessFactory - << taskConfig executor: local
+abr-13 20:36:01.771 [main] DEBUG nextflow.processor.ProcessFactory - >> processorType: 'local'
+abr-13 20:36:01.771 [main] DEBUG nextflow.executor.Executor - Initializing executor: local
+abr-13 20:36:01.772 [main] DEBUG nextflow.Session - >>> barrier register (process: fastqc)
+abr-13 20:36:01.772 [main] DEBUG nextflow.processor.TaskProcessor - Creating operator > fastqc -- maxForks: 28
+abr-13 20:36:01.773 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `screen_for_contaminants` for process `shovill`
+abr-13 20:36:01.774 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `bbduk` for process `shovill`
+abr-13 20:36:01.774 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `fastqc` for process `shovill`
+abr-13 20:36:01.774 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `shovill` for process `shovill`
+abr-13 20:36:01.774 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `prokka` for process `shovill`
+abr-13 20:36:01.774 [main] WARN  nextflow.processor.ProcessFactory - Unknown directive `multiqc` for process `shovill`
+abr-13 20:36:01.777 [main] DEBUG nextflow.processor.ProcessFactory - << taskConfig executor: local
+abr-13 20:36:01.777 [main] DEBUG nextflow.processor.ProcessFactory - >> processorType: 'local'
+abr-13 20:36:01.777 [main] DEBUG nextflow.executor.Executor - Initializing executor: local
+abr-13 20:36:01.778 [main] DEBUG nextflow.Session - Session aborted -- Cause: Cannot invoke method isArray() on null object
+abr-13 20:36:01.795 [main] DEBUG nextflow.Session - The following nodes are still active:
+[process] screen_for_contaminants
+  status=ACTIVE
+  port 0: (queue) CLOSED; channel: -
+  port 1: (value) -   ; channel: __$eachinparam<1>
+  port 2: (cntrl) OPEN; channel: $
+
+[process] concatenate_mash_screen_results
+  status=ACTIVE
+  port 0: (value) -   ; channel: screening_results
+  port 1: (cntrl) OPEN; channel: $
+
+[process] bbduk
+  status=ACTIVE
+  port 0: (queue) OPEN; channel: -
+  port 1: (cntrl) OPEN; channel: $
+
+[process] fastqc
+  status=ACTIVE
+  port 0: (queue) OPEN; channel: -
+  port 1: (cntrl) OPEN; channel: $
+
+abr-13 20:36:01.797 [Task monitor] DEBUG n.processor.TaskPollingMonitor - <<< barrier arrives (monitor: local)
+abr-13 20:36:01.854 [main] ERROR nextflow.cli.Launcher - @unknown
+java.lang.NullPointerException: Cannot invoke method isArray() on null object
+	at org.codehaus.groovy.runtime.NullObject.invokeMethod(NullObject.java:91)
+	at org.codehaus.groovy.runtime.callsite.PogoMetaClassSite.call(PogoMetaClassSite.java:48)
+	at org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCall(CallSiteArray.java:48)
+	at org.codehaus.groovy.runtime.callsite.NullCallSite.call(NullCallSite.java:35)
+	at org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCall(CallSiteArray.java:48)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:113)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:117)
+	at nextflow.script.BaseParam.inputValToChannel(ParamsIn.groovy:140)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.codehaus.groovy.runtime.callsite.PogoMetaMethodSite$PogoCachedMethodSiteNoUnwrapNoCoerce.invoke(PogoMetaMethodSite.java:210)
+	at org.codehaus.groovy.runtime.callsite.PogoMetaMethodSite.callCurrent(PogoMetaMethodSite.java:59)
+	at org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCallCurrent(CallSiteArray.java:52)
+	at org.codehaus.groovy.runtime.callsite.PogoMetaMethodSite.callCurrent(PogoMetaMethodSite.java:64)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.callCurrent(AbstractCallSite.java:166)
+	at nextflow.script.BaseInParam.lazyInit(ParamsIn.groovy:246)
+	at nextflow.script.BaseParam.init(ParamsIn.groovy:94)
+	at sun.reflect.GeneratedMethodAccessor22.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.codehaus.groovy.runtime.callsite.PogoMetaMethodSite$PogoCachedMethodSiteNoUnwrapNoCoerce.invoke(PogoMetaMethodSite.java:210)
+	at org.codehaus.groovy.runtime.callsite.PogoMetaMethodSite.callCurrent(PogoMetaMethodSite.java:59)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.callCurrent(AbstractCallSite.java:158)
+	at nextflow.script.BaseInParam.getInChannel(ParamsIn.groovy:196)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.codehaus.groovy.reflection.CachedMethod.invoke(CachedMethod.java:93)
+	at groovy.lang.MetaMethod.doMethodInvoke(MetaMethod.java:325)
+	at groovy.lang.MetaClassImpl.getProperty(MetaClassImpl.java:1850)
+	at groovy.lang.MetaClassImpl.getProperty(MetaClassImpl.java:3758)
+	at nextflow.script.BaseParam.getProperty(ParamsIn.groovy)
+	at org.codehaus.groovy.runtime.callsite.PogoGetPropertySite.getProperty(PogoGetPropertySite.java:50)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.callGetProperty(AbstractCallSite.java:296)
+	at nextflow.script.InputsList.allScalarInputs(ParamsIn.groovy:586)
+	at nextflow.script.InputsList$allScalarInputs$0.call(Unknown Source)
+	at nextflow.processor.TaskProcessor.run(TaskProcessor.groovy:482)
+	at nextflow.processor.TaskProcessor$run.call(Unknown Source)
+	at nextflow.script.BaseScript.process(BaseScript.groovy:152)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.codehaus.groovy.runtime.callsite.PogoMetaMethodSite$PogoCachedMethodSiteNoUnwrapNoCoerce.invoke(PogoMetaMethodSite.java:210)
+	at org.codehaus.groovy.runtime.callsite.PogoMetaMethodSite.callCurrent(PogoMetaMethodSite.java:59)
+	at org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCallCurrent(CallSiteArray.java:52)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.callCurrent(AbstractCallSite.java:154)
+	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.callCurrent(AbstractCallSite.java:174)
+	at _nf_script_7ff5b2e3.run(_nf_script_7ff5b2e3:246)
+	at nextflow.script.ScriptRunner.run(ScriptRunner.groovy:341)
+	at nextflow.script.ScriptRunner.execute(ScriptRunner.groovy:165)
+	at nextflow.cli.CmdRun.run(CmdRun.groovy:229)
+	at nextflow.cli.Launcher.run(Launcher.groovy:427)
+	at nextflow.cli.Launcher.main(Launcher.groovy:581)

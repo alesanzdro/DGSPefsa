@@ -1,0 +1,6 @@
+name: dgsp_efsa_assembly
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - shovill=1.1.0
