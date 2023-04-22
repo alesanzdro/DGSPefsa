@@ -19,22 +19,75 @@ mamba env create -f dgsp_efsa_sp.yml
 
 
 cd /software/miniconda3/envs/dgsp_efsa_sp/bin
-wget https://github.com/nextflow-io/nextflow/releases/download/v0.26.0/nextflow
-chmod 774 nextflow
+#wget https://github.com/nextflow-io/nextflow/releases/download/v0.26.0/nextflow
+wget https://github.com/nextflow-io/nextflow/releases/download/v20.10.0/nextflow-20.10.0-all
+20.10.0
+chmod 755 nextflow-20.10.0-all
+
+conda activate dgsp_efsa_sp
+cpanm XML::Simple
+
+prokka --setupdb
+
+Si hay problemas con las versiones y con otro Perl
+% which -a perl
+% perl -V | tail
+% prokka --version
+
+
 nextflow
 
 
+mamba env update -f dgsp_efsa_contamination.yml
+CONDAPATH="/software/miniconda3/envs"
+
+# Necesitamos python 2.7 para INNUca
+mamba env update -f dgsp_efsa_py27.yml
+
+cd ${CONDAPATH}/dgsp_efsa_contamination
+git clone https://github.com/B-UMMI/INNUca.git
+
+git clone https://github.com/B-UMMI/ReMatCh.git
+cd ReMatCh
+python3 setup.py install
+
+export PATH="${CONDAPATH}/dgsp_efsa_contamination/INNUca:${CONDAPATH}/dgsp_efsa_contamination/ReMatCh/ReMatCh:$PATH"
+
+dgsp_efsa_contamination/ReMatCh/ReMatCh
+# Remplazar #!/usr/bin/env python2 por
+
+#!/software/miniconda3/envs/dgsp_efsa_py27/bin/python2.7
+
+
+https://olc-bioinformatics.github.io/ConFindr/install/
+ConFindr
+
+https://pubmlst.org/data
+
+###############################################################3
+#Listeria monocytogenes
+
+# Añadimos al fichero map
+
+echo -e "listeria_monocytogenes\tListeria\tmonocytogenes" >> /software/miniconda3/envs/dgsp_efsa_contamination/db/scheme_species_map.tab
+
+# Creamos carpeta y metemos ficheros
+DBlm=/software/miniconda3/envs/dgsp_efsa_contamination/db/pubmlst/listeria_monocytogenes
+mkdir -p ${DBlm}
+curl -o ${DBlm}/listeria_monocytogenes.txt https://bigsdb.pasteur.fr/api/db/pubmlst_listeria_seqdef/schemes/2/profiles_csv
+curl -o ${DBlm}/abcZ.tfa https://bigsdb.pasteur.fr/api/db/pubmlst_listeria_seqdef/loci/abcZ/alleles_fasta
+curl -o ${DBlm}/bglA.tfa https://bigsdb.pasteur.fr/api/db/pubmlst_listeria_seqdef/loci/bglA/alleles_fasta
+curl -o ${DBlm}/cat.tfa https://bigsdb.pasteur.fr/api/db/pubmlst_listeria_seqdef/loci/cat/alleles_fasta
+curl -o ${DBlm}/dapE.tfa https://bigsdb.pasteur.fr/api/db/pubmlst_listeria_seqdef/loci/dapE/alleles_fasta
+curl -o ${DBlm}/dat.tfa https://bigsdb.pasteur.fr/api/db/pubmlst_listeria_seqdef/loci/dat/alleles_fasta
+curl -o ${DBlm}/ldh.tfa https://bigsdb.pasteur.fr/api/db/pubmlst_listeria_seqdef/loci/ldh/alleles_fasta
+curl -o ${DBlm}/lhkA.tfa https://bigsdb.pasteur.fr/api/db/pubmlst_listeria_seqdef/loci/lhkA/alleles_fasta
 
 
 
 
-
-
-
-
-
-
-
+# si quisieramos tirar por misma base de datos 
+# /software/miniconda3/envs/dgsp_efsa_contamination/bin/mlst-download_pub_mlst -d db_mlst
 
 
 

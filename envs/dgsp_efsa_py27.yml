@@ -1,0 +1,9 @@
+name: dgsp_efsa_py27
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=2.7
+  - pip
+  - pip:
+    - plotly
