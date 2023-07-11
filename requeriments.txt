@@ -1,0 +1,459 @@
+###################################################################################
+# Preparamos MASH
+###################################################################################
+mkdir /software/resources/mash
+cd /software/resources/mash
+#wget https://obj.umiacs.umd.edu/mash/screen/RefSeq88n.msh.gz
+wget https://gembox.cbcb.umd.edu/mash/refseq.genomes.k21s1000.msh
+
+###################################################################################
+# Descargamos BACTpipe 2.7
+###################################################################################
+cd /software/resources
+wget https://github.com/ctmrbio/BACTpipe/archive/refs/tags/v2.7.0.zip
+unzip v2.7.0.zip
+rm v2.7.0.zip
+
+###################################################################################
+# Creamos ambientes CONDA
+###################################################################################
+
+##################################################################### dgsp_efsa_sp2
+mamba env create -f dgsp_efsa_sp2.yml
+
+cd /software/miniconda3/envs/dgsp_efsa_sp/bin
+#wget https://github.com/nextflow-io/nextflow/releases/download/v0.26.0/nextflow
+wget https://github.com/nextflow-io/nextflow/releases/download/v20.10.0/nextflow-20.10.0-all
+chmod 755 nextflow-20.10.0-all
+conda activate dgsp_efsa_sp
+cpanm XML::Simple
+prokka --setupdb
+
+#Si hay problemas con las versiones y con otro Perl
+#% which -a perl
+#% perl -V | tail
+#% prokka --version
+
+#nextflow
+
+#conda create -c bioconda checkm-genome=1.0.18 -n dgsp_efsa_checkm
+
+##################################################################### dgsp_efsa_contamination
+mamba env update -f dgsp_efsa_contamination.yml
+CONDAPATH="/software/miniconda3/envs"
+
+##################################################################### dgsp_efsa_py27
+# Necesitamos python 2.7 para INNUca
+mamba env update -f dgsp_efsa_py27.yml
+
+cd ${CONDAPATH}/dgsp_efsa_contamination
+git clone https://github.com/B-UMMI/INNUca.git
+
+git clone https://github.com/B-UMMI/ReMatCh.git
+cd ReMatCh
+python3 setup.py install
+
+# En el pipeline se carga cada vez que se corre, pero se podría poner en .bashrc
+export PATH="${CONDAPATH}/dgsp_efsa_contamination/INNUca:${CONDAPATH}/dgsp_efsa_contamination/ReMatCh/ReMatCh:$PATH"
+
+###################################################################################
+#### Aseguramos tener todo lo que necesitamos de perl
+sudo apt install cpanminus
+conda activate dgsp_efsa_contamination
+sudo cpanm List::MoreUtils
+sudo cpanm Moo
+sudo cpanm JSON
+
+###################################################################################
+#### Modificar fichero INNUCA
+vim /software/miniconda3/envs/dgsp_efsa_contamination/INNUca/INNUca.py
+
+>>>Remplazar 
+
+>>>#!/usr/bin/env python2 
+
+>>>por
+
+>>>#!/software/miniconda3/envs/dgsp_efsa_py27/bin/python2.7
+
+
+#ConFindr
+#https://olc-bioinformatics.github.io/ConFindr/install/ConFindr
+#https://pubmlst.org/data
+
+###################################################################################
+#### Agregamos Listeria monocytogenes a PUBMLST
+
+# Añadimos al fichero map
+
+echo -e "listeria_monocytogenes\tListeria\tmonocytogenes" >> /software/miniconda3/envs/dgsp_efsa_contamination/db/scheme_species_map.tab
+
+# Creamos carpeta y metemos ficheros
+DBlm=/software/miniconda3/envs/dgsp_efsa_contamination/db/pubmlst/listeria_monocytogenes
+mkdir -p ${DBlm}
+curl -o ${DBlm}/listeria_monocytogenes.txt https://bigsdb.pasteur.fr/api/db/pubmlst_listeria_seqdef/schemes/2/profiles_csv
+curl -o ${DBlm}/abcZ.tfa https://bigsdb.pasteur.fr/api/db/pubmlst_listeria_seqdef/loci/abcZ/alleles_fasta
+curl -o ${DBlm}/bglA.tfa https://bigsdb.pasteur.fr/api/db/pubmlst_listeria_seqdef/loci/bglA/alleles_fasta
+curl -o ${DBlm}/cat.tfa https://bigsdb.pasteur.fr/api/db/pubmlst_listeria_seqdef/loci/cat/alleles_fasta
+curl -o ${DBlm}/dapE.tfa https://bigsdb.pasteur.fr/api/db/pubmlst_listeria_seqdef/loci/dapE/alleles_fasta
+curl -o ${DBlm}/dat.tfa https://bigsdb.pasteur.fr/api/db/pubmlst_listeria_seqdef/loci/dat/alleles_fasta
+curl -o ${DBlm}/ldh.tfa https://bigsdb.pasteur.fr/api/db/pubmlst_listeria_seqdef/loci/ldh/alleles_fasta
+curl -o ${DBlm}/lhkA.tfa https://bigsdb.pasteur.fr/api/db/pubmlst_listeria_seqdef/loci/lhkA/alleles_fasta
+
+
+# si quisieramos tirar por misma base de datos 
+# /software/miniconda3/envs/dgsp_efsa_contamination/bin/mlst-download_pub_mlst -d db_mlst
+
+
+###################################################################################
+# CheckM_databases 
+###################################################################################
+mkdir -p /software/resources/checkm_data
+cd /software/resources/checkm_data
+wget -c https://data.ace.uq.edu.au/public/CheckM_databases/checkm_data_2015_01_16.tar.gz
+tar -zxvf checkm_data_2015_01_16.tar.gz
+#checkm data setRoot /software/resources/checkm_data
+checkm data setRoot /software/resources/checkm_data
+
+
+###################################################################################
+# DOCKER images
+###################################################################################
+
+docker pull staphb/mlst:2.23.0
+docker pull staphb/abricate:1.0.1-insaflu-220727
+docker pull staphb/ariba:latest
+docker pull ummidock/chewbbaca:3.1.2
+## seq_typing:2.3-01
+cd /software/resources/docker
+git clone https://github.com/ODiogoSilva/docker-images.git
+# Añadir proxy
+#vim docker-images/seq_typing/Dockerfile
+#ENV HTTP_PROXY="http://193.145.201.49:8080"
+#ENV HTTPS_PROXY="http://193.145.201.49:8080"
+#ENV http_proxy="http://193.145.201.49:8080"
+#ENV https_proxy="http://193.145.201.49:8080"
+#docker build -t ummidock/seq_typing:2.3-01 ./docker-images/seq_typing/
+#docker build -t ummidock/seq_typing:2.3-01 ./seq_typing/Docker/
+#docker pull ummidock/seq_typing:2.2-01
+docker pull ummidock/seq_typing:2.3-dev-2021-03
+## patho_typing
+cd /software/resources/docker
+#git clone https://github.com/ODiogoSilva/docker-images.git
+vim docker-images/patho_typing/Dockerfile
+# Añadir proxy
+ENV HTTP_PROXY="http://193.145.201.49:8080"
+ENV HTTPS_PROXY="http://193.145.201.49:8080"
+ENV http_proxy="http://193.145.201.49:8080"
+ENV https_proxy="http://193.145.201.49:8080"
+docker build -t ummidock/patho_typing ./docker-images/patho_typing/
+docker pull genomicepidemiology/resfinder:4.3.2
+
+docker pull staphb/seqsero2:1.2.1
+
+
+
+# FIN INSTALACIÓN
+
+###################################################################################
+###################################################################################
+###################################################################################
+###################################################################################
+###################################################################################
+
+
+
+
+#docker pull staphb/resfinder:4.1.11
+#docker pull staphb/mlst:2.23.0
+#docker pull bfrbioinformatics/chewiesnake:latest
+#docker pull staphb/ncbi-amrfinderplus
+
+###################################################################################
+# Pruebas docker
+
+PATHARIBA=/software/resources/ariba
+mkdir -p $PATHARIBA/tmp
+docker run \
+--env HTTP_PROXY="http://193.145.201.49:8080" \
+--env http_proxy="http://193.145.201.49:8080" \
+--env HTTPS_PROXY="http://193.145.201.49:8080" \
+--env https_proxy="http://193.145.201.49:8080" \
+--cpus ${THREADS} --rm -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHARIBA}:${PATHARIBA} \
+-e ARIBA_TMPDIR='/software/resources/ariba/tmp' \
+-e MPLCONFIGDIR='/software/resources/ariba/tmp' \
+
+docker pull sangerpathogens/ariba:latest
+
+docker run --rm -it -v ${PATHARIBA}:${PATHARIBA} \
+--env HTTP_PROXY="http://193.145.201.49:8080" \
+--env http_proxy="http://193.145.201.49:8080" \
+--env HTTPS_PROXY="http://193.145.201.49:8080" \
+--env https_proxy="http://193.145.201.49:8080" \
+sangerpathogens/ariba /bin/bash
+
+ariba pubmlstget "Salmonella enterica" /software/resources/ariba/Salmonella_enterica/
+ariba pubmlstget "Escherichia coli#1" /software/resources/ariba/Escherichia_coli1/
+ariba pubmlstget "Escherichia coli#2" /software/resources/ariba/Escherichia_coli2/
+ariba pubmlstget "Listeria monocytogenes" /software/resources/ariba/Listeria_monocytogenes/
+ariba pubmlstget "Salmonella enterica" /software/resources/ariba/Salmonella_enterica/
+
+
+docker run -it \
+--env HTTP_PROXY="http://193.145.201.49:8080" \
+--env http_proxy="http://193.145.201.49:8080" \
+--env HTTPS_PROXY="http://193.145.201.49:8080" \
+--env https_proxy="http://193.145.201.49:8080" \
+staphb/ncbi-amrfinderplus /bin/bash
+
+amrfinder_update
+#Looking up the published databases at https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/
+#WARNING: '/amrfinder/data/2023-04-17.1/' contains the latest version: 2023-04-17.1
+#Skipping update, use amrfinder --force_update to overwrite the existing database
+
+##################################################################################################
+##################### Al final descargamos schemas empleando el software de chewBBACA
+
+PATHMLST=/software/resources/cgMLST_data
+########################################## Salmonella enterica
+BACT=Salmonella_enterica
+chewBBACA_BLAST_SCORE_RATIO=0.6
+chewBBACA_MINIMUM_LENGTH=0
+chewBBACA_TRANSLATION_TABLE=11
+chewBBACA_SIZE_THRESHOLD=None
+mkdir -p ${PATHMLST}"/"${BACT}
+mkdir -p ${PATHMLST}"/schema/"${BACT}
+#######
+
+docker run --cpus ${THREADS} \
+                                --env HTTP_PROXY="http://193.145.201.49:8080" \
+                                --env http_proxy="http://193.145.201.49:8080" \
+                                --env HTTPS_PROXY="http://193.145.201.49:8080" \
+                                --env https_proxy="http://193.145.201.49:8080" \
+                                --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHMLST}:${PATHMLST} ummidock/chewbbaca:3.1.2 \
+                                chewBBACA.py DownloadSchema -sp 8 -sc 1 -o ${PATHMLST}"/"${BACT}
+
+PATHSCHEMA=${PATHMLST}"/"${BACT}"/"$(ls ${PATHMLST}"/"${BACT})
+
+# Evaluamos esquema
+#docker run --cpus ${THREADS} \
+#--rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHMLST}:${PATHMLST} ummidock/chewbbaca:3.1.2 \
+#chewBBACA.py SchemaEvaluator -i ${PATHSCHEMA} -o ${PATHMLST}"/"${BACT}/SchemaEvaluator --cpu ${THREADS}
+
+docker run --cpus ${THREADS} \
+--rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHMLST}:${PATHMLST} ummidock/chewbbaca:3.1.2 \
+chewBBACA.py PrepExternalSchema \
+--cpu ${THREADS} \
+--bsr ${chewBBACA_BLAST_SCORE_RATIO} \
+--l ${chewBBACA_MINIMUM_LENGTH} \
+--t ${chewBBACA_TRANSLATION_TABLE} \
+--st ${chewBBACA_SIZE_THRESHOLD} \
+-i ${PATHSCHEMA} \
+-o ${PATHMLST}"/schema/"${BACT} \
+--ptf ${PATHSCHEMA}"/"${BACT}".trn"
+
+
+
+########################################## Listeria monocytogenes
+BACT=Listeria_monocytogenes
+chewBBACA_BLAST_SCORE_RATIO=0.6
+chewBBACA_MINIMUM_LENGTH=144
+chewBBACA_TRANSLATION_TABLE=11
+chewBBACA_SIZE_THRESHOLD=0.2
+mkdir -p ${PATHMLST}"/"${BACT}
+mkdir -p ${PATHMLST}"/schema/"${BACT}
+#######
+
+docker run --cpus ${THREADS} \
+                                --env HTTP_PROXY="http://193.145.201.49:8080" \
+                                --env http_proxy="http://193.145.201.49:8080" \
+                                --env HTTPS_PROXY="http://193.145.201.49:8080" \
+                                --env https_proxy="http://193.145.201.49:8080" \
+                                --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHMLST}:${PATHMLST} ummidock/chewbbaca:3.1.2\
+                                chewBBACA.py DownloadSchema -sp 6 -sc 1 -o ${PATHMLST}"/"${BACT}
+
+PATHSCHEMA=${PATHMLST}"/"${BACT}"/"$(ls ${PATHMLST}"/"${BACT})
+
+docker run --cpus ${THREADS} \
+--rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHMLST}:${PATHMLST} ummidock/chewbbaca:3.1.2 \
+chewBBACA.py PrepExternalSchema \
+--cpu ${THREADS} \
+--bsr ${chewBBACA_BLAST_SCORE_RATIO} \
+--l ${chewBBACA_MINIMUM_LENGTH} \
+--t ${chewBBACA_TRANSLATION_TABLE} \
+--st ${chewBBACA_SIZE_THRESHOLD} \
+-i ${PATHSCHEMA} \
+-o ${PATHMLST}"/schema/"${BACT} \
+--ptf ${PATHSCHEMA}"/"${BACT}".trn"
+
+########################################## Escherichia coli
+BACT=Escherichia_coli
+chewBBACA_BLAST_SCORE_RATIO=0.6
+chewBBACA_MINIMUM_LENGTH=0
+chewBBACA_TRANSLATION_TABLE=11
+chewBBACA_SIZE_THRESHOLD=0.2
+mkdir -p ${PATHMLST}"/"${BACT}
+mkdir -p ${PATHMLST}"/schema/"${BACT}
+#######
+
+docker run --cpus ${THREADS} \
+                                --env HTTP_PROXY="http://193.145.201.49:8080" \
+                                --env http_proxy="http://193.145.201.49:8080" \
+                                --env HTTPS_PROXY="http://193.145.201.49:8080" \
+                                --env https_proxy="http://193.145.201.49:8080" \
+                                --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHMLST}:${PATHMLST} ummidock/chewbbaca:3.1.2\
+                                chewBBACA.py DownloadSchema -sp 5 -sc 1 -o ${PATHMLST}"/"${BACT}
+
+PATHSCHEMA=${PATHMLST}"/"${BACT}"/"$(ls ${PATHMLST}"/"${BACT})
+
+docker run --cpus ${THREADS} \
+--rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHMLST}:${PATHMLST} ummidock/chewbbaca:3.1.2 \
+chewBBACA.py PrepExternalSchema \
+--cpu ${THREADS} \
+--bsr ${chewBBACA_BLAST_SCORE_RATIO} \
+--l ${chewBBACA_MINIMUM_LENGTH} \
+--t ${chewBBACA_TRANSLATION_TABLE} \
+--st ${chewBBACA_SIZE_THRESHOLD} \
+-i ${PATHSCHEMA} \
+-o ${PATHMLST}"/schema/"${BACT} \
+--ptf ${PATHSCHEMA}"/"${BACT}".trn"
+
+##################################################################################################
+##################################################################################################
+
+
+
+###################################################################################################
+# OTROS
+###################################################################################################
+
+##################################################################### CONFIGURANDO chewBBACA desde repositorio
+# chewBBACA
+#mkdir /software/resources/docker/chewBBACA 
+#cd /software/resources/docker/chewBBACA 
+#curl --location --remote-header-name --remote-name https://raw.githubusercontent.com/B-UMMI/docker-images/master/chewBBACA_py3/Dockerfile
+#vim Dockerfile
+
+#Añadimos
+#ENV HTTP_PROXY="http://193.145.201.49:8080"
+#ENV HTTPS_PROXY="http://193.145.201.49:8080"
+#ENV http_proxy="http://193.145.201.49:8080"
+#ENV https_proxy="http://193.145.201.49:8080"
+
+#docker build -t ummidock/chewbbaca_proxy .
+
+################################################################### Descargando a pelo
+
+################################################################
+# Descargamos esquemas cgMLST para los perfiles alélicos
+
+# mkdir /software/resources/cgMLST_data
+# cd /software/resources/cgMLST_data
+
+# PATHMLST=/software/resources/cgMLST_data
+
+########################################## Salmonella enterica
+# BACT=Salmonella_enterica
+# mkdir -p $PATHMLST/$BACT
+# curl -X GET "https://chewbbaca.online/NS/api/species/8/schemas/1/zip?request_type=download" -H  "accept: application/json" -o $PATHMLST/$BACT/$BACT.zip
+# unzip -o -d $PATHMLST/$BACT $PATHMLST/$BACT/$BACT.zip
+########################################## Escherichia coli
+# BACT=Listeria_monocytogenes
+# mkdir -p $PATHMLST/$BACT
+# curl -X GET "https://chewbbaca.online/NS/api/species/6/schemas/1/zip?request_type=download" -H  "accept: application/json" -o $PATHMLST/$BACT/$BACT.zip
+# unzip -o -d $PATHMLST/$BACT $PATHMLST/$BACT/$BACT.zip
+########################################## Listeria monocytogenes
+# BACT=Escherichia_coli
+# mkdir -p $PATHMLST/$BACT
+# curl -X GET "https://chewbbaca.online/NS/api/species/5/schemas/1/zip?request_type=download" -H  "accept: application/json" -o $PATHMLST/$BACT/$BACT.zip
+# unzip -o -d $PATHMLST/$BACT $PATHMLST/$BACT/$BACT.zip
+
+# /software/resources/cgMLST_data/Salmonella_enterica/Salmonella_enterica.trn
+# /software/resources/cgMLST_data/Listeria_monocytogenes/Listeria_monocytogenes.trn
+# /software/resources/cgMLST_data/Escherichia_coli/Escherichia_coli.trn
+
+# NOTA, se ven algunas diferencias con los chewBBACA frente a los descargados manualmente, como el pipeline habrá gastado seguramente la app de chewBBACA, empleamos esa metodología.
+
+
+
+docker pull staphb/staramr:0.8.0
+docker pull aribabase/aribabase:latest
+docker pull genomicepidemiology/resfinder:EFSA_Latest
+docker pull bfrbioinformatics/chewiesnake:databases-efsa-20230501
+
+
+SeqSero2
+#LisSero --->
+
+ResFinder4.1
+Abricate
+chewBBACA
+PHANtAsTiC 
+
+Mlst
+ariba
+
+
+docker exec -it ummidock/seq_typing:2.3-dev-2021-03/bin/bash
+
+docker 
+docker run --rm -u $(id -u):$(id -g) -it -v /local/folder/fastq_data:/data/ ummidock/seq_typing:2.3-dev-2021-03 \
+    seq_typing.py reads --org Haemophilus influenzae \
+                        --fastq /data/sample_1.fq.gz /data/sample_2.fq.gz \
+                        --outdir /data/sample_out/ \
+                        --threads 2
+
+
+
+######################### PHANtT-Ec
+cd /software/resources
+git clone https://github.com/aknijn/phantastic-galaxy.git
+
+
+
+
+
+
+################### INTENTO CREAR BASE DE DATOS ACTUALIZADA MASH
+# Get the list of assemblies:
+wget ftp.ncbi.nlm.nih.gov/genomes/refseq/assembly_summary_refseq.txt 
+Parse the addresses of complete genomes from it (right now n = 44632):
+#awk -F '\t' '{if($12=="Complete Genome") print $0}' assembly_summary_refseq.txt > assembly_summary_refseq_complete_genomes.txt
+#awk -F '\t' '{print $20}' assembly_summary_refseq_complete_genomes.txt > assembly_summary_refseq_complete_genomes_link.txt
+
+# 13637 sequences
+awk -F '\t' '{if($12=="Complete Genome") print $0}' assembly_summary_refseq.txt | grep "Salmonella\|Listeria\|Campylobacter\|Escherichia\|Enterococcus\|Enterobacter\|Yersinia\|Klebsiella\|Neisseria\|Treponema\|Staphylococcus\|Streptococcus\|coronavirus\|Influenza\|neumovirus\|hinovirus\|denovirus\|arainfluenza\|aemophilus\|ycobacterium\|eishmania\|lavivirus\|lasmodium\|Ebola" > assembly_summary_refseq_complete_selected.txt
+awk -F '\t' '{print $20}' assembly_summary_refseq_complete_selected.txt > assembly_summary_refseq_complete_selected_link.txt
+
+
+# Make a dir for data
+mkdir refseq
+
+# Fetch data
+for next in $(cat assembly_summary_refseq_complete_selected_link.txt); do wget -P refseq "$next"/${next##*/}_genomic.fna.gz; done >> download-refseq.log 2>&1
+
+
+for next in $(cat assembly_summary_refseq_complete_selected_link.txt); do cp refseq_full/${next##*/}* refseq; done
+
+# Extract data
+
+rm refseq/GCF_000006645.1_ASM664v1_genomic.fna.gz
+gunzip refseq/*.gz
+
+#Concatenate data
+
+cat refseq/*.fna > all_complete_refseq.fasta
+
+
+wget https://obj.umiacs.umd.edu/mash/screen/RefSeq88n.msh.gz
+
+wget https://gembox.cbcb.umd.edu/mash/refseq.genomes.k21s1000.msh
+
+# otro https://gitlab.bfr.berlin/bfr_bioinformatics/bakcharak_resources/-/raw/main/databases/mash.tar.gz
+
+
+
+# ----------------------------------------------------------------------------------
+# Cosas para mirar:
+# ----------------------------------------------------------------------------------
+# https://bitbucket.org/enterobase/enterobase-web/src/master/docs/mlst/
