@@ -34,29 +34,29 @@ log_command() {
 #https://onestopdataanalysis.com/checkm-completeness-contamination/
 #==============================================================================
 # NECESARIO MODIFICAR O TENER CONSTRUIDO
-RUN="230210_LSPV002"
+RUN="230316_LSPV004"
 SRUN=$(echo $RUN | awk -F "_" '{print $2}')
-INPUT_PATH="/ALMEIDA/PROJECTS/BACTERIAS/DGSP/RAW"
+INPUT_PATH="/home/susana/DGSP/RAW"
 SAMPLESHEET=${INPUT_PATH}"/"${RUN}"/"${SRUN}"/samplesheet.csv"
 IR=${INPUT_PATH}"/"${RUN}"/"${SRUN}
 DATE=$(date +"%y%m%d")
-OUTPUT_PATH="/ALMEIDA/PROJECTS/BACTERIAS/DGSP/analysis/"${RUN}
+OUTPUT_PATH="/home/susana/DGSP/analysis_efsa/"${RUN}
 CONDAPATH="/software/miniconda3/envs"
-BACTPIPE="/ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/BACTpipe-2.7.0/bactpipe.nf"
-PATHARIBA=/ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/ariba
-PATHMLST=/ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/cgMLST_data
-THREADS=16
-SPADESMEM=72
+BACTPIPE="/software/resources/BACTpipe-2.7.0/bactpipe.nf"
+PATHARIBA="/software/resources/ariba"
+PATHMLST="/software/resources/cgMLST_data"
+THREADS=14
+SPADESMEM=32
 VAR_C1_LENGTH=301
 VAR_C4_COMPLETENESS=98
 VAR_C4_CONTAMINATION=2
 
 
 export PERL5LIB=/software/miniconda3/envs/dgsp_efsa_sp/lib/perl5/5.32
-export PATH=/ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/signalp-5.0b/bin:$PATH
+export PATH=/software/resources/signalp-5.0b/bin:$PATH
 export PATH="${CONDAPATH}/dgsp_efsa_contamination/INNUca:${CONDAPATH}/dgsp_efsa_contamination/ReMatCh/ReMatCh:$PATH"
 
-MASH_DB="/ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/mash/refseq.genomes.k21s1000.msh"
+MASH_DB="/software/resources/mash/refseq.genomes.k21s1000.msh"
 #MASH_DB="/ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/mash/RefSeq88n.msh"
 
 #export LD_LIBRARY_PATH=${CONDAPATH=}/dgsp_efsa_sp/lib
@@ -96,6 +96,7 @@ if [[ ! -e ${OUTPUT_PATH} ]]; then
     mkdir -p ${OUTPUT_PATH}"/logs/resfinder"
     mkdir -p ${OUTPUT_PATH}"/logs/mlst"
     mkdir -p ${OUTPUT_PATH}"/logs/abricate"
+    mkdir -p ${OUTPUT_PATH}"/logs/ariba"
 
 
     mkdir -p ${OUTPUT_PATH}"/tmp"
@@ -122,14 +123,16 @@ fi
 
         # VARIABLES
         
-
-        sample="22_LM_03313"
-        fastq_1="22_LM_03313_S25_R1_001.fastq.gz"
-        fastq_2="22_LM_03313_S25_R2_001.fastq.gz"
+        #sample="22_SALM_03323"
+        #fastq_1="22_SALM_03323_S43_R1_001.fastq.gz"
+        #fastq_2="22_SALM_03323_S43_R2_001.fastq.gz"
+        #sample="22_LM_03313"
+        #fastq_1="22_LM_03313_S25_R1_001.fastq.gz"
+        #fastq_2="22_LM_03313_S25_R2_001.fastq.gz"
 
         SPE=$(echo $fastq_1 | awk -F "_" '{print $2}')
 
-        if [[ "$SPE" == "SALM" ]]; then
+        if [[ "$SPE" == "SAL" ]] || [[ "$SPE" == "SALM" ]]; then
             VAR_C1_GENOME=5000000
             VAR_C2_SPE="Salmonella enterica"
             VAR_C3_GENOME=$(echo "scale=3; $VAR_C1_GENOME/1000000" | bc -l)
@@ -189,7 +192,7 @@ fi
         #
         ##########################################################
         source /software/miniconda3/etc/profile.d/conda.sh
-        conda activate ${CONDAPATH}/dgsp_efsa_qc
+        conda activate ${CONDAPATH}/dgsp_efsa_sp
 
         ################################################################################
         # FastQC Quality RAW
@@ -402,7 +405,7 @@ fi
                         #>> ${OUTPUT_PATH}/logs/checkm/${sample}_02_tree_qa.log 2>&1
 
                         #http://www.mselab.cn/detail/81/
-                        checkm data setRoot /ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/checkm_data
+                        checkm data setRoot /software/resources/checkm_data
                         # https://github.com/Ecogenomics/CheckM/issues/244
                         # https://github.com/Ecogenomics/CheckM/wiki/Workflows#using-custom-marker-genes
                     
@@ -662,9 +665,10 @@ fi
                                 docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHARIBA}:${PATHARIBA} staphb/ariba:latest \
                                 ariba run \
                                 --threads ${THREADS} \
-                                ${PATHARIBA}/Listeria_monocytogenes/ref_db \
+                                ${PATHARIBA}/Salmonella_enterica/ref_db \
                                 ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_1.fastq.gz ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_2.fastq.gz \
-                                ${OUTPUT_PATH}"/typing/"${sample}"/AMR/ariba"
+                                ${OUTPUT_PATH}"/typing/"${sample}"/AMR/ariba" \
+			        > ${OUTPUT_PATH}/logs/ariba/${sample}.log 2>&1
 
                                 #---------------------------------------------------------
                                 # 05.4  Allele calling
@@ -672,10 +676,10 @@ fi
                                 mkdir -p ${OUTPUT_PATH}"/typing/"${sample}"/ALLELE_CALLING"
 
                                 chewBBACA_BLAST_SCORE_RATIO=0.6
-                                chewBBACA_MINIMUM_LENGTH=144
+                                chewBBACA_MINIMUM_LENGTH=0
                                 chewBBACA_TRANSLATION_TABLE=11
-                                chewBBACA_SIZE_THRESHOLD=0.2
-                                BACT=Listeria_monocytogenes
+                                chewBBACA_SIZE_THRESHOLD=None
+                                BACT=Salmonella_enterica
 
                                 # Ya venimos con el esquema descargado y adaptado según las especificaciones de la EFSA
                                 # docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} ummidock/chewbbaca:3.1.2 \
@@ -826,7 +830,8 @@ fi
                                 --threads ${THREADS} \
                                 ${PATHARIBA}/Listeria_monocytogenes/ref_db \
                                 ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_1.fastq.gz ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_2.fastq.gz \
-                                ${OUTPUT_PATH}"/typing/"${sample}"/AMR/ariba"
+                                ${OUTPUT_PATH}"/typing/"${sample}"/AMR/ariba" \
+				> ${OUTPUT_PATH}/logs/ariba/${sample}.log 2>&1
 
                                 #---------------------------------------------------------
                                 # 05.4  Allele calling
@@ -918,7 +923,7 @@ fi
                                 mkdir -p ${OUTPUT_PATH}"/typing/"${sample}"/SERO-PATHO_typing/seq_typing"
                                 mkdir -p ${OUTPUT_PATH}"/typing/"${sample}"/SERO-PATHO_typing/patho_typing"
 
-                                sample="17_STEC_00757"             
+                                #sample="17_STEC_00757"             
                                 
                                 # SEQ_typing
                                 docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} ummidock/seq_typing:2.3-dev-2021-03 \
@@ -990,31 +995,32 @@ fi
                                 # Limpiamos un poco el fichero
                                 sed -i "s:^$var2erase::" ${OUTPUT_PATH}"/typing/"${sample}"/MLST_VIRULENCE-PROFILE/"${sample}"_abricate.out"
 
-                                python /ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/phantastic-galaxy/\
-                                -1 ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_1.fastq.gz \
-                                -2 ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_2.fastq.gz \
-                                --fasta ${OUTPUT_PATH}"/typing/"${sample}/${sample}.contigs.fa \
-                                --output ${OUTPUT_PATH}"/typing/"${sample}"/MLST_VIRULENCE-PROFILE/res.json" \
-                                --input_id ${sample} \
-                                --serotype O157:H45 \
-                                --amrgenes entA
+                                #python /ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/phantastic-galaxy/\
+                                #-1 ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_1.fastq.gz \
+                                #-2 ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_2.fastq.gz \
+                                #--fasta ${OUTPUT_PATH}"/typing/"${sample}/${sample}.contigs.fa \
+                                #--output ${OUTPUT_PATH}"/typing/"${sample}"/MLST_VIRULENCE-PROFILE/res.json" \
+                                #--input_id ${sample} \
+                                #--serotype O157:H45 \
+                                #--amrgenes entA
 
-                                awk '{print $6}' ${OUTPUT_PATH}"/typing/"${sample}"/MLST_VIRULENCE-PROFILE/"${sample}"_abricate.out" | uniq | grep -v "GENE" | awk 'BEGIN { ORS = " " } { print }'
+                                #awk '{print $6}' ${OUTPUT_PATH}"/typing/"${sample}"/MLST_VIRULENCE-PROFILE/"${sample}"_abricate.out" | uniq | grep -v "GENE" | awk 'BEGIN { ORS = " " } { print }'
 
-                                PATHARIBA=/ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/ariba
+                                #PATHARIBA=/ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/ariba
 
                                 docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHARIBA}:${PATHARIBA} staphb/ariba:latest \
                                 ariba run \
                                 --threads ${THREADS} \
                                 ${PATHARIBA}/Escherichia_coli1/ref_db \
                                 ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_1.fastq.gz ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_2.fastq.gz \
-                                ${OUTPUT_PATH}"/typing/"${sample}"/AMR/ariba"
+                                ${OUTPUT_PATH}"/typing/"${sample}"/AMR/ariba" \
+				> ${OUTPUT_PATH}/logs/ariba/${sample}.log 2>&1
 
                                 #---------------------------------------------------------
                                 # 05.4  Allele calling
                                 #---------------------------------------------------------
                                 mkdir -p ${OUTPUT_PATH}"/typing/"${sample}"/ALLELE_CALLING"
-                                PATHMLST=/ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/cgMLST_data
+                                #PATHMLST=/ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/cgMLST_data
 
                                 chewBBACA_BLAST_SCORE_RATIO=0.6
                                 chewBBACA_MINIMUM_LENGTH=0

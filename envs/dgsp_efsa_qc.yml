@@ -1,9 +1,0 @@
-name: dgsp_efsa_qc
-channels:
-  - conda-forge
-  - bioconda
-dependencies:
-  - fastqc=0.12.1
-  - fastp=0.23.2
-  - picard=3.0.0
-  - multiqc=1.14
