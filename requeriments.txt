@@ -38,9 +38,22 @@ prokka --setupdb
 
 #conda create -c bioconda checkm-genome=1.0.18 -n dgsp_efsa_checkm
 
+
+mamba env create -p /software/miniconda3/envs/dgsp_efsa_sp3 -f /ALMEIDA/PROJECTS/BACTERIAS/DGSP/envs-DGSPefsa/dgsp_efsa_sp.yml 
+
+
+conda install -c bioconda sistr_cmd
+
+
+
+
 ##################################################################### dgsp_efsa_contamination
 mamba env update -f dgsp_efsa_contamination.yml
 CONDAPATH="/software/miniconda3/envs"
+
+mamba env update -f dgsp_efsa_core-snp.yml
+
+
 
 ##################################################################### dgsp_efsa_py27
 # Necesitamos python 2.7 para INNUca
@@ -63,6 +76,17 @@ conda activate dgsp_efsa_contamination
 sudo cpanm List::MoreUtils
 sudo cpanm Moo
 sudo cpanm JSON
+
+# FORZAR PATH AL PRINCIPIO
+vim /software/miniconda3/envs/dgsp_efsa_contamination/etc/conda/activate.d/activate_perl.sh
+export PATH=/software/miniconda3/envs/dgsp_efsa_contamination/bin:$PATH
+chmod +x /software/miniconda3/envs/dgsp_efsa_contamination/etc/conda/activate.d/activate_perl.sh
+
+# BORRAR CAMBIO, AUNQUE AL ELIMINAR EL AMBIENTE YA DEBERÍA RESTAURARSE
+vim /software/miniconda3/envs/dgsp_efsa_contamination/etc/conda/deactivate.d/deactivate_perl.sh
+export PATH=$(echo $PATH | sed -e 's@/software/miniconda3/envs/dgsp_efsa_contamination/bin:@@')
+chmod +x /software/miniconda3/envs/dgsp_efsa_contamination/etc/conda/deactivate.d/deactivate_perl.sh
+
 
 ###################################################################################
 #### Modificar fichero INNUCA

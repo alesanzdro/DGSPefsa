@@ -363,7 +363,8 @@ fi
                 #./download_loci.sh ~/.confindr_db/database_Campylobacter_cgMLST
                 # Eliminamos comentarios como CAMP0123 NO ES UN LOCUS! DEL FICHERO FASTA FINAL
                 #cat ~/.confindr_db/database_Campylobacter_cgMLST/*fasta | grep -v "^CAMP" > ~/.confindr_db/Campylobacter_cgMLST.fasta
-                
+                # De momento se crea excpeción para que se coga el mlst 
+
                 if [[ "$SPE" == "CAMP" ]]; then
                     #confindr.py -t $THREADS -i ${OUTPUT_PATH}/pipeline/${sample}/fastq -o ConFindr --cgmlst ~/.confindr_db/Campylobacter_cgMLST.fasta >> ${OUTPUT_PATH}/log/confindr/${sample}.log 2>&1
                     confindr.py -t $THREADS -i ${OUTPUT_PATH}/pipeline/${sample}/fastq -o ConFindr --cgmlst ~/.confindr_db/Campylobacter_jejuni-coli.fasta >> ${OUTPUT_PATH}/log/confindr/${sample}.log 2>&1
@@ -602,14 +603,13 @@ fi
                         C4_completeness=$(grep "Completeness" ${OUTPUT_PATH}/pipeline/${sample}/checkm/${sample}_checkm.tsv | awk '{print $2}')
                         C4_contamination=$(grep "Contamination" ${OUTPUT_PATH}/pipeline/${sample}/checkm/${sample}_checkm.tsv | awk '{print $2}')
 
+                        # Extraer la segunda columna y unirla con ';'
+                        vcheckm=$(awk '{print $2}' ${OUTPUT_PATH}/pipeline/${sample}/checkm/${sample}_checkm.tsv | tr '\n' ';')
 
-        echo "Sample;Fq1;Fq2;Expected_sp;Genome_size;Min_genome_size;Max_genome_size;Max_SNV;Max_Contigs;Read_size;Bases_Q30;Cov_Q30;Rate_Q30;Status_Q30;Sp_detected;Status_SP;SNV_detected\
-        ;Status_SNV;Expected_completeness;Expected_contamination;Completeness;Contamination;Status_Contamination"  > ${OUTPUT_PATH}"/results/summary.csv"
-        echo $sample";"$fastq_1";"$fastq_2";"$VAR_C2_SPE";"$VAR_C3_GENOME";"$VAR_C4_GENOME_MIN";"$VAR_C4_GENOME_MAX";"$VAR_C3_SNV";"$VAR_C4_CONTIGS";"$VAR_C1_LENGTH";"$BASESQ30";"$COVQ30";"\
-        $VALUEQ30";"$CONTROL_1_Q30";"$C2_SPE";"$CONTROL_2_BACT";"$C3_warning";"$CONTROL_3_CONT";"$VAR_C4_COMPLETENESS";"$VAR_C4_CONTAMINATION";"$C4_completeness";"$C4_contamination";"$CONTROL4_CHECKM  >> ${OUTPUT_PATH}"/results/summary.csv"
+                        # Eliminar el último ';'
+                        vcheckm=${vcheckm%?}
 
-
-        
+                        
 
                         if (($(echo "$C4_completeness < $VAR_C4_COMPLETENESS" | bc -l))) || (($(echo "$C4_contamination > $VAR_C4_CONTAMINATION" | bc -l))); then
                             CONTROL4_CHECKM="FAIL"
@@ -638,12 +638,27 @@ fi
 
                             if (($(echo "$C4_N50 < 30000" | bc -l))) || (($(echo "$C4_contigs > $VAR_C4_CONTIGS" | bc -l))) || [[ "$C3_confindr" = "True" ]]; then
                                 CONTROL4_CHECKM_quality="ASSEMBLY_QUALITY: BAD"
+                                vCONTROL4_CHECKM_quality="BAD"
+
                             else
                                 CONTROL4_CHECKM_quality="ASSEMBLY_QUALITY: GOOD"
+                                vCONTROL4_CHECKM_quality="GOOD"
+
+
                             fi
 
                             echo ${CONTROL4_CHECKM_quality} | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
             
+
+                            echo "Sample;Fq1;Fq2;Expected_sp;Genome_size;Min_genome_size;Max_genome_size;Max_SNV;Max_Contigs;Read_size;\
+                            Bases_Q30;Cov_Q30;Rate_Q30;Status_Q30;Sp_detected;Status_SP;SNV_detected;Status_SNV;Expected_completeness;Expected_contamination;\
+                            Marker_lineage;Completeness;Contamination;Strain_heterogeneity;Taxonomy_(contained);Genome_size_(Mbp);Gene_count;out_genome_size_(Mbp)_mean;out_genome_size_(Mbp)_std;\
+                            out_gene_count_mean;out_gene_count_std;contigs;N50_(contigs);Status_Contamination;Assembly_quality"  > ${OUTPUT_PATH}"/results/summary.csv"
+                            echo $sample";"$fastq_1";"$fastq_2";"$VAR_C2_SPE";"$VAR_C3_GENOME";"$VAR_C4_GENOME_MIN";"$VAR_C4_GENOME_MAX";"$VAR_C3_SNV";"$VAR_C4_CONTIGS";"$VAR_C1_LENGTH";\
+                            "$BASESQ30";"$COVQ30";"$VALUEQ30";"$CONTROL_1_Q30";"$C2_SPE";"$CONTROL_2_BACT";"$C3_warning";"$CONTROL_3_CONT";"$VAR_C4_COMPLETENESS";"$VAR_C4_CONTAMINATION";\
+                            "$vcheckm";"$CONTROL4_CHECKM";"$vCONTROL4_CHECKM_quality  >> ${OUTPUT_PATH}"/results/summary.csv"
+
+
 
                             ##########################################################
                             #
@@ -1178,6 +1193,12 @@ fi
                                 p=2
                             elif [[ "$VAR_C2_SPE" = "Campylobacter jenuni" ]]; then
                                 p=2
+
+                            elif [[ "$VAR_C2_SPE" = "Klebsiella pneumoniae" ]]; then
+                                # Ejecutar Kleborate
+                                kleborate -o kleborate_results.txt -a spades_output/contigs.fasta
+                                # Aquí podrías añadir código para extraer MLST, cgMLST, y otros resultados del archivo kleborate_results.txt
+
                             fi
                         fi
                     else
