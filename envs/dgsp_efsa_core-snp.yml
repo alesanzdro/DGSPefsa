@@ -1,0 +1,9 @@
+name: dgsp_efsa_core-snp
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - roary=3.13.0
+  - iqtree=2.2.3
+  - snippy=4.6.0
+  - snp-dists=0.8.2

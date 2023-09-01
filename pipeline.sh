@@ -15,6 +15,11 @@
 # #DATABASE_KMERFINDER="/software/resources/kmerfinder/databases/bacteria/bacteria"
 # DATABASE_KMERFINDER="/ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/kmerfinder/databases/bacteria/bacteria"
 
+# Creamos enlace simbólico carpeta resources
+#ln -s /ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/ /software/resources/dgsp
+#unlink /software/resources/dgsp
+
+
 ################################################################################
 # Log functions
 ################################################################################
@@ -34,30 +39,31 @@ log_command() {
 #https://onestopdataanalysis.com/checkm-completeness-contamination/
 #==============================================================================
 # NECESARIO MODIFICAR O TENER CONSTRUIDO
-RUN="230316_LSPV004"
+RUN="230712_PRUEBA"
 SRUN=$(echo $RUN | awk -F "_" '{print $2}')
-INPUT_PATH="/home/susana/DGSP/RAW"
-SAMPLESHEET=${INPUT_PATH}"/"${RUN}"/"${SRUN}"/samplesheet.csv"
-IR=${INPUT_PATH}"/"${RUN}"/"${SRUN}
+#INPUT_PATH="/home/susana/DGSP/RAW"
+INPUT_PATH="/ALMEIDA/PROJECTS/BACTERIAS/DGSP/DGSPefsa/sample_data/RAW"
+SAMPLESHEET=${INPUT_PATH}/${RUN}/${SRUN}/samplesheet.csv
+IR=${INPUT_PATH}/${RUN}/${SRUN}
 DATE=$(date +"%y%m%d")
-OUTPUT_PATH="/home/susana/DGSP/analysis_efsa/"${RUN}
+#OUTPUT_PATH="/home/susana/DGSP/analysis_efsa/"${RUN}
+OUTPUT_PATH="/ALMEIDA/PROJECTS/BACTERIAS/DGSP/DGSPefsa/sample_data/ANALYSIS/"${RUN}
 CONDAPATH="/software/miniconda3/envs"
-BACTPIPE="/software/resources/BACTpipe-2.7.0/bactpipe.nf"
-PATHARIBA="/software/resources/ariba"
-PATHMLST="/software/resources/cgMLST_data"
-THREADS=14
-SPADESMEM=32
+BACTPIPE="/software/resources/dgsp/BACTpipe-2.7.0/bactpipe.nf"
+PATHARIBA="/software/resources/dgsp/ariba"
+PATHMLST="/software/resources/dgsp/cgMLST_data"
+THREADS=20
+SPADESMEM=64
 VAR_C1_LENGTH=301
 VAR_C4_COMPLETENESS=98
 VAR_C4_CONTAMINATION=2
 
 
 export PERL5LIB=/software/miniconda3/envs/dgsp_efsa_sp/lib/perl5/5.32
-export PATH=/software/resources/signalp-5.0b/bin:$PATH
+export PATH=/software/resources/dgsp/signalp-5.0b/bin:$PATH
 export PATH="${CONDAPATH}/dgsp_efsa_contamination/INNUca:${CONDAPATH}/dgsp_efsa_contamination/ReMatCh/ReMatCh:$PATH"
 
-MASH_DB="/software/resources/mash/refseq.genomes.k21s1000.msh"
-#MASH_DB="/ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/mash/RefSeq88n.msh"
+MASH_DB="/software/resources/dgsp/mash/refseq.genomes.k21s1000.msh"
 
 #export LD_LIBRARY_PATH=${CONDAPATH=}/dgsp_efsa_sp/lib
 # AMR MLST env
@@ -79,24 +85,24 @@ if [[ ! -e ${OUTPUT_PATH} ]]; then
     mkdir -p ${OUTPUT_PATH}"/typing"
 
     # Carpeta para recoger múltiples reportes
-    mkdir -p ${OUTPUT_PATH}"/reports/fastqc/raw"
-    mkdir -p ${OUTPUT_PATH}"/reports/fastqc/trim"
-    mkdir -p ${OUTPUT_PATH}"/reports/fastp"
-    mkdir -p ${OUTPUT_PATH}"/reports/multiqc"
+    mkdir -p ${OUTPUT_PATH}"/qc/fastqc/raw"
+    mkdir -p ${OUTPUT_PATH}"/qc/fastqc/trim"
+    mkdir -p ${OUTPUT_PATH}"/qc/fastp"
+    mkdir -p ${OUTPUT_PATH}"/qc/multiqc"
 
-    mkdir -p ${OUTPUT_PATH}"/logs/fastp"
-    mkdir -p ${OUTPUT_PATH}"/logs/efsa"
-    mkdir -p ${OUTPUT_PATH}"/logs/BACTpipe"
-    mkdir -p ${OUTPUT_PATH}"/logs/innuca"
-    mkdir -p ${OUTPUT_PATH}"/logs/confindr"
-    mkdir -p ${OUTPUT_PATH}"/logs/checkm"
-    mkdir -p ${OUTPUT_PATH}"/logs/seq_typing"
-    mkdir -p ${OUTPUT_PATH}"/logs/patho_typing"
-    mkdir -p ${OUTPUT_PATH}"/logs/chewbbaca"
-    mkdir -p ${OUTPUT_PATH}"/logs/resfinder"
-    mkdir -p ${OUTPUT_PATH}"/logs/mlst"
-    mkdir -p ${OUTPUT_PATH}"/logs/abricate"
-    mkdir -p ${OUTPUT_PATH}"/logs/ariba"
+    mkdir -p ${OUTPUT_PATH}"/log/fastp"
+    mkdir -p ${OUTPUT_PATH}"/log/efsa"
+    mkdir -p ${OUTPUT_PATH}"/log/BACTpipe"
+    mkdir -p ${OUTPUT_PATH}"/log/innuca"
+    mkdir -p ${OUTPUT_PATH}"/log/confindr"
+    mkdir -p ${OUTPUT_PATH}"/log/checkm"
+    mkdir -p ${OUTPUT_PATH}"/log/seq_typing"
+    mkdir -p ${OUTPUT_PATH}"/log/patho_typing"
+    mkdir -p ${OUTPUT_PATH}"/log/chewbbaca"
+    mkdir -p ${OUTPUT_PATH}"/log/resfinder"
+    mkdir -p ${OUTPUT_PATH}"/log/mlst"
+    mkdir -p ${OUTPUT_PATH}"/log/abricate"
+    mkdir -p ${OUTPUT_PATH}"/log/ariba"
 
 
     mkdir -p ${OUTPUT_PATH}"/tmp"
@@ -122,13 +128,27 @@ fi
         echo "$sample FASTQ1: $fastq_1 FASTQ2: $fastq_2"
 
         # VARIABLES
-        
+
         #sample="22_SALM_03323"
         #fastq_1="22_SALM_03323_S43_R1_001.fastq.gz"
         #fastq_2="22_SALM_03323_S43_R2_001.fastq.gz"
-        #sample="22_LM_03313"
-        #fastq_1="22_LM_03313_S25_R1_001.fastq.gz"
-        #fastq_2="22_LM_03313_S25_R2_001.fastq.gz"
+        # sample="17_STEC_10960"
+        # fastq_1="17_STEC_10960_S65_R1_001.fastq.gz"
+        # fastq_2="17_STEC_10960_S65_R2_001.fastq.gz"
+        # sample="22_LMON_07334"
+        # fastq_1="22_LMON_07334_S49_R1_001.fastq.gz"
+        # fastq_2="22_LMON_07334_S49_R2_001.fastq.gz"
+        # sample="22_SALM_01804"
+        # fastq_1="22_SALM_01804_S67_R1_001.fastq.gz"
+        # fastq_2="22_SALM_01804_S67_R2_001.fastq.gz"
+        sample="23_CAMP_01451"
+        fastq_1="23_CAMP_01451_S43_R1_001.fastq.gz"
+        fastq_2="23_CAMP_01451_S43_R1_001.fastq.gz"
+        # 17_STEC_10960	17_STEC_10960_S65_R1_001.fastq.gz	17_STEC_10960_S65_R2_001.fastq.gz
+        # 22_LMON_07334	22_LMON_07334_S49_R1_001.fastq.gz	22_LMON_07334_S49_R2_001.fastq.gz
+        # 22_SALM_01804	22_SALM_01804_S67_R1_001.fastq.gz	22_SALM_01804_S67_R2_001.fastq.gz
+        # 23_CAMP_01451   23_CAMP_01451_S43_R1_001.fastq.gz   23_CAMP_01451_S43_R1_001.fastq.gz
+
 
         SPE=$(echo $fastq_1 | awk -F "_" '{print $2}')
 
@@ -140,7 +160,7 @@ fi
             VAR_C4_GENOME_MIN=4.3
             VAR_C4_GENOME_MAX=5.3
             VAR_C4_CONTIGS=300
-            #mkdir -p ${OUTPUT_PATH}"/logs/seqsero2"
+            #mkdir -p ${OUTPUT_PATH}"/log/seqsero2"
             #mkdir -p ${OUTPUT_PATH}"/pipeline/"${sample}"/seqsero2"
         elif [[ "$SPE" == "LM" ]] || [[ "$SPE" == "LMON" ]]; then
             VAR_C1_GENOME=2880000
@@ -150,7 +170,7 @@ fi
             VAR_C4_GENOME_MIN=2.7
             VAR_C4_GENOME_MAX=3.2
             VAR_C4_CONTIGS=200
-            mkdir -p ${OUTPUT_PATH}"/logs/lissero"
+            mkdir -p ${OUTPUT_PATH}"/log/lissero"
             #mkdir -p ${OUTPUT_PATH}"/pipeline/"${sample}"/lissero"
         elif [[ "$SPE" == "STEC" ]] || [[ "$SPE" == "ECOL" ]]; then
             VAR_C1_GENOME=5000000
@@ -179,11 +199,12 @@ fi
             VAR_C4_CONTIGS=150
         fi
 
+
         ##########################
         # DIRECTORIOS ASOCIADOS A MUESTRA
-        mkdir -p ${OUTPUT_PATH}"/pipeline/"${sample}"/fastq"
-        mkdir -p ${OUTPUT_PATH}"/pipeline/"${sample}"/assembly"
-        mkdir -p ${OUTPUT_PATH}"/typing/"${sample}
+        mkdir -p ${OUTPUT_PATH}/pipeline/${sample}/fastq
+        mkdir -p ${OUTPUT_PATH}/pipeline/${sample}/assembly
+        mkdir -p ${OUTPUT_PATH}/typing/${sample}
 
 
         ##########################################################
@@ -197,15 +218,15 @@ fi
         ################################################################################
         # FastQC Quality RAW
         ################################################################################
-        fastqc --quiet --threads ${THREADS} -outdir ${OUTPUT_PATH}/reports/fastqc/raw ${IR}/${fastq_1} ${IR}/${fastq_2}
+        fastqc --quiet --threads ${THREADS} -outdir ${OUTPUT_PATH}/qc/fastqc/raw ${IR}/${fastq_1} ${IR}/${fastq_2}
 
         ################################################################################
         # FastP Quality  trimming
         ################################################################################
         fastp --thread ${THREADS} --in1 ${IR}/${fastq_1} --in2 ${IR}/${fastq_2} \
             --cut_tail --cut_window_size=10 --cut_mean_quality=20 --length_required=50 --correction \
-            --json ${OUTPUT_PATH}/reports/fastp/${sample}.report.fastp.json --html ${OUTPUT_PATH}/reports/fastp/${sample}.report.fastp.html \
-            --out1 ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_1.fastq.gz --out2 ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_2.fastq.gz >> ${OUTPUT_PATH}/logs/fastp/${sample}.log 2>&1
+            --json ${OUTPUT_PATH}/qc/fastp/${sample}.report.fastp.json --html ${OUTPUT_PATH}/qc/fastp/${sample}.report.fastp.html \
+            --out1 ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_1.fastq.gz --out2 ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_2.fastq.gz >> ${OUTPUT_PATH}/log/fastp/${sample}.log 2>&1
 
         ################################################################################
         # CHECK Q30 EFSA
@@ -218,9 +239,9 @@ fi
 
         # Recuperamos valor Q30
 
-        BASESQ30=$(grep "Q30" ${OUTPUT_PATH}/logs/fastp/${sample}.log | tail -n 2 | awk -F " " '{print $3}' | awk -F "(" '{print $1}' | awk '{total += $1}END{ printf total}')
+        BASESQ30=$(grep "Q30" ${OUTPUT_PATH}/log/fastp/${sample}.log | tail -n 2 | awk -F " " '{print $3}' | awk -F "(" '{print $1}' | awk '{total += $1}END{ printf total}')
         COVQ30=$(echo 2k $BASESQ30 $VAR_C1_GENOME /p | dc)
-        VALUEQ30=$(grep "Q30" ${OUTPUT_PATH}/logs/fastp/${sample}.log | tail -n 2 | awk -F " " '{print $3}' | awk -F "(" '{print $2}' | sed 's/%//g' | awk '{total += $1; count += 1}END{ printf "%4.3f\n",  total / count}')
+        VALUEQ30=$(grep "Q30" ${OUTPUT_PATH}/log/fastp/${sample}.log | tail -n 2 | awk -F " " '{print $3}' | awk -F "(" '{print $2}' | sed 's/%//g' | awk '{total += $1; count += 1}END{ printf "%4.3f\n",  total / count}')
         if ((VAR_C1_LENGTH == 301)); then
             if (($(echo "$COVQ30 < 30" | bc -l))) || (($(echo "$VALUEQ30 < 70" | bc -l))); then
                 CONTROL_1_Q30="FAIL"
@@ -249,49 +270,49 @@ fi
             echo "Error, read lenght!"
         fi
 
-        echo "****************************************" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-        echo "Q30 CHECK" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-        echo "****************************************" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-        printf 'READ_SIZE: %s\n' "$VAR_C1_LENGTH" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-        printf 'GENOME_SIZE: %s\n' "$VAR_C1_GENOME" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-        printf 'BASES: %s\n' "$BASESQ30" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-        printf 'COV_ESTIMATED: %s\n' "$COVQ30" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-        printf 'RATE Q30: %s\n' "$VALUEQ30" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-        printf 'STATUS: %s\n' "$CONTROL_1_Q30" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
+        echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+        echo "Q30 CHECK" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+        echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+        printf 'READ_SIZE: %s\n' "$VAR_C1_LENGTH" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+        printf 'GENOME_SIZE: %s\n' "$VAR_C1_GENOME" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+        printf 'BASES: %s\n' "$BASESQ30" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+        printf 'COV_ESTIMATED: %s\n' "$COVQ30" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+        printf 'RATE Q30: %s\n' "$VALUEQ30" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+        printf 'STATUS: %s\n' "$CONTROL_1_Q30" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
 
         if [ "$CONTROL_1_Q30" = "PASS" ]; then
             ################################################################################
             # FastQC Quality TRIM
             ################################################################################
-            fastqc --quiet --threads ${THREADS} --outdir ${OUTPUT_PATH}/reports/fastqc/trim ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_1.fastq.gz ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_2.fastq.gz
-            conda deactivate
+            fastqc --quiet --threads ${THREADS} --outdir ${OUTPUT_PATH}/qc/fastqc/trim ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_1.fastq.gz ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_2.fastq.gz
 
             ##########################################################
             #
             # 03 Species validation
             #
             ##########################################################
-            conda activate ${CONDAPATH}/dgsp_efsa_sp
+            #conda activate ${CONDAPATH}/dgsp_efsa_sp
 
-            #mash screen ${MASH_DB} ${OUTPUT_PATH}/out/0_fastq/${sample}_1.fastq.gz ${OUTPUT_PATH}/out/0_fastq/${sample}_2.fastq.gz > ${OUTPUT_PATH}/logs/mash/${sample}_88.txt
+            #mash screen ${MASH_DB} ${OUTPUT_PATH}/out/0_fastq/${sample}_1.fastq.gz ${OUTPUT_PATH}/out/0_fastq/${sample}_2.fastq.gz > ${OUTPUT_PATH}/log/mash/${sample}_88.txt
 
             cd ${OUTPUT_PATH}/pipeline/${sample}
             nextflow-20.10.0-all run ${BACTPIPE} \
                 --mashscreen_database ${MASH_DB} \
-                --reads './fastq/*_{1,2}.fastq.gz' >> ${OUTPUT_PATH}/logs/BACTpipe/${sample}.log 2>&1
+                --reads './fastq/*_{1,2}.fastq.gz' >> ${OUTPUT_PATH}/log/BACTpipe/${sample}.log 2>&1
 
-            echo "****************************************" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-            echo "SPECIES CHECK" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-            echo "****************************************" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-            cat ${OUTPUT_PATH}/pipeline/${sample}/BACTpipe_results/mash_screen/all_samples.mash_screening_results.tsv >> ${OUTPUT_PATH}/logs/efsa/${sample}.log
+            echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+            echo "SPECIES CHECK" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+            echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+            cat ${OUTPUT_PATH}/pipeline/${sample}/BACTpipe_results/mash_screen/all_samples.mash_screening_results.tsv >> ${OUTPUT_PATH}/log/efsa/${sample}.log
             C2_STATUS=$(cat ${OUTPUT_PATH}/pipeline/${sample}/BACTpipe_results/mash_screen/all_samples.mash_screening_results.tsv | awk '{print $2}')
             C2_SPE=$(cat ${OUTPUT_PATH}/pipeline/${sample}/BACTpipe_results/mash_screen/all_samples.mash_screening_results.tsv | awk -F "\t" '{print $5}' | sed -e "s/\[\|\]\|'//g")
 
-            printf 'OUR SAMPLE: %s\n' "$VAR_C2_SPE" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
+            printf 'SPE_LOOK: %s\n' "$VAR_C2_SPE" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+            printf 'SPE_FIND: %s\n' "$C2_SPE" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
 
             if [[ "$C2_STATUS" = "PASS" ]] && [[ "$C2_SPE" == "$VAR_C2_SPE" ]]; then
                 CONTROL_2_BACT="PASS"
-                printf 'STATUS: %s\n' "$CONTROL_2_BACT" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
+                printf 'STATUS: %s\n' "$CONTROL_2_BACT" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
 
                 # CHECK SEROVARES !!!!!
                 if [[ "$VAR_C2_SPE" = "Salmonella enterica" ]]; then
@@ -303,18 +324,54 @@ fi
                     (cd ${OUTPUT_PATH}/pipeline/${sample}/BACTpipe_results/shovill && lissero ${sample}.contigs.fa >> ${OUTPUT_PATH}/pipeline/${sample}/${sample}.lissero.txt 2>&1)
                     var2erase=${OUTPUT_PATH}/pipeline/${sample}/BACTpipe_results/shovill/
                     #IMPORTANTE EN SED SE EMPLEA ":" PARA SEPARAS CAMPOS Y PODER ELIMINAR PATH PARCIAL
-                    lissero ${OUTPUT_PATH}/pipeline/${sample}/BACTpipe_results/shovill/${sample}.contigs.fa --logfile ${OUTPUT_PATH}/logs/lissero/${sample}.log | sed "s:^$var2erase::" > ${OUTPUT_PATH}/pipeline/${sample}/${sample}.lissero.txt
+                    lissero ${OUTPUT_PATH}/pipeline/${sample}/BACTpipe_results/shovill/${sample}.contigs.fa --logfile ${OUTPUT_PATH}/log/lissero/${sample}.log | sed "s:^$var2erase::" > ${OUTPUT_PATH}/pipeline/${sample}/${sample}.lissero.txt
                 fi
+
 
                 ##########################################################
                 #
                 # 04 Contamination
                 #
                 ##########################################################
-                echo "****************************************" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-                echo "Contamination CHECK" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-                echo "****************************************" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-                confindr.py -i ${OUTPUT_PATH}/pipeline/${sample}/fastq -o ConFindr >> ${OUTPUT_PATH}/logs/confindr/${sample}.log 2>&1
+                echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                echo "Contamination CHECK" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+
+                # Updated database rMLST for Campylobacter jejuni
+                # https://olc-bioinformatics.github.io/ConFindr/install/#downloading-confindr-databases
+                # registro en https://pubmlst.org/bigsdb
+                # Campylobacter jejuni/coli isolates (pubmlst_campylobacter_isolates)
+                # Campylobacter jejuni/coli typing (pubmlst_campylobacter_seqdef)
+                # Ribosomal MLST genomes (pubmlst_rmlst_isolates)
+                # Ribosomal MLST typing (pubmlst_rmlst_seqdef)
+                ## Descargo los MLST de varios genes: aspA.fas  glnA.fas  gltA.fas  glyA.fas  pgm.fas  tkt.fas  uncA.fas
+                # cat *.fas > Campylobacter_db_cgderived.fasta 
+                ## Ve voy a la base de datos que está en /home/asanzc/.confindr_db y copio este fichero        
+                ## Hago copia del fichero refseq
+                # mv refseq.msh saved_refseq.msh
+                ## combino los ficheros anteriores y genero un nuevo refseq.msh incluyendo campylobacter
+                # cat *fasta > combined.fasta
+                # CONDAPATH="/software/miniconda3/envs"
+                # conda activate ${CONDAPATH}/dgsp_efsa_sp
+                # mash sketch -o refseq combined.fasta
+                ## elimino combined.fasta
+                ## Esto no ha funcionado, por que no se ha añadido bien
+                ## dejo el archivo refseq.msh antiguo 
+                # mv saved_refseq.msh refseq.msh
+                # Creo fichero download_loci.sh para descargar cgMLST de Campylobacter
+                #chmod +x download_loci.sh
+                #./download_loci.sh ~/.confindr_db/database_Campylobacter_cgMLST
+                # Eliminamos comentarios como CAMP0123 NO ES UN LOCUS! DEL FICHERO FASTA FINAL
+                #cat ~/.confindr_db/database_Campylobacter_cgMLST/*fasta | grep -v "^CAMP" > ~/.confindr_db/Campylobacter_cgMLST.fasta
+                # De momento se crea excpeción para que se coga el mlst 
+
+                if [[ "$SPE" == "CAMP" ]]; then
+                    #confindr.py -t $THREADS -i ${OUTPUT_PATH}/pipeline/${sample}/fastq -o ConFindr --cgmlst ~/.confindr_db/Campylobacter_cgMLST.fasta >> ${OUTPUT_PATH}/log/confindr/${sample}.log 2>&1
+                    confindr.py -t $THREADS -i ${OUTPUT_PATH}/pipeline/${sample}/fastq -o ConFindr --cgmlst ~/.confindr_db/Campylobacter_jejuni-coli.fasta >> ${OUTPUT_PATH}/log/confindr/${sample}.log 2>&1
+                else
+                    confindr.py -t $THREADS -i ${OUTPUT_PATH}/pipeline/${sample}/fastq -o ConFindr >> ${OUTPUT_PATH}/log/confindr/${sample}.log 2>&1
+                fi
+
                 conda deactivate
 
                 conda activate ${CONDAPATH}/dgsp_efsa_contamination
@@ -322,7 +379,7 @@ fi
                 INNUca.py -j ${THREADS} \
                     -i ${OUTPUT_PATH}/pipeline/${sample}/fastq \
                     -o INNUca \
-                    -s "$VAR_C2_SPE" -g $VAR_C3_GENOME >> ${OUTPUT_PATH}/logs/innuca/${sample}.log 2>&1
+                    -s "$VAR_C2_SPE" -g $VAR_C3_GENOME >> ${OUTPUT_PATH}/log/innuca/${sample}.log 2>&1
 
                 # Recogemos resultados contaminación
                 C3_confindr=$(awk -F "," '{print $4}' ${OUTPUT_PATH}/pipeline/${sample}/ConFindr/confindr_report.csv | grep -v "ContamStatus" | uniq)
@@ -337,11 +394,11 @@ fi
                 #• E.coli: 4
                 if (($(echo "$C3_warning > $VAR_C3_SNV" | bc -l))); then
                     CONTSNV="FAIL"
-                    echo "****************************************" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-                    echo "========================================" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-                    echo "WARNING!" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-                    echo "ConFindr show SNV contamination" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-                    echo "========================================" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
+                    echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                    echo "========================================" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                    echo "WARNING!" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                    echo "ConFindr show SNV contamination" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                    echo "========================================" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                 else
                     CONTSNV="PASS"
                     repinnuca=$(ls ${OUTPUT_PATH}/pipeline/${sample}/INNUca/samples_report.*)
@@ -349,7 +406,7 @@ fi
 
                     if [[ "$C3_confindr" = "False" ]] && [[ "$C3_innuca" = "PASS" ]]; then
                         CONTROL_3_CONT="PASS"
-                        printf 'STATUS: %s\n' "$CONTROL_3_CONT" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
+                        printf 'STATUS: %s\n' "$CONTROL_3_CONT" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
 
                         ##########################################################
                         #
@@ -366,9 +423,11 @@ fi
                         #cp ${OUTPUT_PATH}/pipeline/${sample}/assembly/shovill/contigs.fa ${OUTPUT_PATH}/pipeline/${sample}/assembly/${sample}.contigs.fa
                         #statswrapper.sh in=${OUTPUT_PATH}/pipeline/${sample}/assembly/${sample}.contigs.fa > ${OUTPUT_PATH}/pipeline/${sample}/assembly/${sample}.assembly_stats.txt
 
-                        echo "****************************************" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-                        echo "Assembly quality CHECKM" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-                        echo "****************************************" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
+
+
+                        echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                        echo "Assembly quality CHECKM" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                        echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                         #mkdir -p ${OUTPUT_PATH}/pipeline/${sample}/assembly/contigs
                         #Desglosamos fichero contigs en fastas individuales
                         #(cd ${OUTPUT_PATH}/pipeline/${sample}/assembly/contigs && cat ../${sample}.contigs.fa | awk '{
@@ -382,30 +441,30 @@ fi
 
                         #checkm lineage_wf -t ${THREADS} \
                         #    -x fa ${OUTPUT_PATH}/pipeline/${sample}/assembly/contigs \
-                        #    ${OUTPUT_PATH}/pipeline/${sample}/checkm >> ${OUTPUT_PATH}/logs/checkm/${sample}.log 2>&1
+                        #    ${OUTPUT_PATH}/pipeline/${sample}/checkm >> ${OUTPUT_PATH}/log/checkm/${sample}.log 2>&1
 
                         
                         #checkm lineage_wf -t ${THREADS} \
                         #    -x fa ${OUTPUT_PATH}/pipeline/${sample}/BACTpipe_results/shovill/\
-                        #    ${OUTPUT_PATH}/pipeline/${sample}/checkm >> ${OUTPUT_PATH}/logs/checkm/${sample}.log 2>&1
+                        #    ${OUTPUT_PATH}/pipeline/${sample}/checkm >> ${OUTPUT_PATH}/log/checkm/${sample}.log 2>&1
       
                         # En caso de no tener más de 16GB opción --reduced_tree
                         #checkm lineage_wf --reduced_tree -t ${THREADS} \
                         #    -x fa ${OUTPUT_PATH}/pipeline/${sample}/BACTpipe_results/shovill/\
-                        #    ${OUTPUT_PATH}/pipeline/${sample}/checkm >> ${OUTPUT_PATH}/logs/checkm/${sample}.log 2>&1
+                        #    ${OUTPUT_PATH}/pipeline/${sample}/checkm >> ${OUTPUT_PATH}/log/checkm/${sample}.log 2>&1
                          
                         #checkm tree --reduced_tree --ali -t ${THREADS} -x fa \
                         #    ${OUTPUT_PATH}/pipeline/${sample}/BACTpipe_results/shovill/ \
                         #    ${OUTPUT_PATH}/pipeline/${sample}/checkm \
-                        #    >> ${OUTPUT_PATH}/logs/checkm/${sample}_01_tree.log 2>&1
+                        #    >> ${OUTPUT_PATH}/log/checkm/${sample}_01_tree.log 2>&1
 
                         #checkm tree_qa -o 2 --tab_table \
                         #-f ${OUTPUT_PATH}/pipeline/${sample}/checkm/tree_qa.tsv \
                         #${OUTPUT_PATH}/pipeline/${sample}/checkm \
-                        #>> ${OUTPUT_PATH}/logs/checkm/${sample}_02_tree_qa.log 2>&1
+                        #>> ${OUTPUT_PATH}/log/checkm/${sample}_02_tree_qa.log 2>&1
 
                         #http://www.mselab.cn/detail/81/
-                        checkm data setRoot /software/resources/checkm_data
+                        checkm data setRoot /software/resources/dgsp/checkm_data
                         # https://github.com/Ecogenomics/CheckM/issues/244
                         # https://github.com/Ecogenomics/CheckM/wiki/Workflows#using-custom-marker-genes
                     
@@ -421,7 +480,7 @@ fi
                         -x fa \
                         ${OUTPUT_PATH}/pipeline/${sample}/BACTpipe_results/shovill/ \
                         ${OUTPUT_PATH}/pipeline/${sample}/checkm \
-                        >> ${OUTPUT_PATH}/logs/checkm/${sample}_01_lineage_wf.log 2>&1
+                        >> ${OUTPUT_PATH}/log/checkm/${sample}_01_lineage_wf.log 2>&1
 
 
                         checkm taxonomy_wf -t ${THREADS} \
@@ -436,11 +495,11 @@ fi
                         checkm tree_qa -o 2 --tab_table \
                         -f ${OUTPUT_PATH}/pipeline/${sample}/checkm/tree_qa.tsv \
                         ${OUTPUT_PATH}/pipeline/${sample}/checkm \
-                        >> ${OUTPUT_PATH}/logs/checkm/${sample}_02_tree_qa.log 2>&1
+                        >> ${OUTPUT_PATH}/log/checkm/${sample}_02_tree_qa.log 2>&1
 
                         checkm tetra ${OUTPUT_PATH}/pipeline/${sample}/BACTpipe_results/shovill/${sample}.contigs.fa \
                         ${OUTPUT_PATH}/pipeline/${sample}/checkm/tetra_profile.tsv \
-                        >> ${OUTPUT_PATH}/logs/checkm/${sample}_03_tetra_qa.log 2>&1
+                        >> ${OUTPUT_PATH}/log/checkm/${sample}_03_tetra_qa.log 2>&1
 
 
                         #https://136.159.60.117/metaerg/mockEvenCell/metaspades/metabat1500/SCG/
@@ -515,17 +574,17 @@ fi
                         checkm marker_plot ${OUTPUT_PATH}/pipeline/${sample}/checkm/ \
                         -x fa ${OUTPUT_PATH}/pipeline/${sample}/BACTpipe_results/shovill \
                         ${OUTPUT_PATH}/pipeline/${sample}/checkm/plots \
-                        >> ${OUTPUT_PATH}/logs/checkm/${sample}_04_marker_plot.log 2>&1
+                        >> ${OUTPUT_PATH}/log/checkm/${sample}_04_marker_plot.log 2>&1
 
                         checkm len_hist \
                         -x fa ${OUTPUT_PATH}/pipeline/${sample}/BACTpipe_results/shovill \
                         ${OUTPUT_PATH}/pipeline/${sample}/checkm/plots \
-                        >> ${OUTPUT_PATH}/logs/checkm/${sample}_05_len_hist.log 2>&1
+                        >> ${OUTPUT_PATH}/log/checkm/${sample}_05_len_hist.log 2>&1
 
                         checkm nx_plot \
                         -x fa ${OUTPUT_PATH}/pipeline/${sample}/BACTpipe_results/shovill \
                         ${OUTPUT_PATH}/pipeline/${sample}/checkm/plots \
-                        >> ${OUTPUT_PATH}/logs/checkm/${sample}_06_nx_plot.log 2>&1
+                        >> ${OUTPUT_PATH}/log/checkm/${sample}_06_nx_plot.log 2>&1
 
 
                         checkm tetra_plot \
@@ -534,26 +593,34 @@ fi
                         ${OUTPUT_PATH}/pipeline/${sample}/checkm/plots \
                         ${OUTPUT_PATH}/pipeline/${sample}/checkm/tetra_profile.tsv \
                         95 \
-                        >> ${OUTPUT_PATH}/logs/checkm/${sample}_07_tetra_plot.log 2>&1
+                        >> ${OUTPUT_PATH}/log/checkm/${sample}_07_tetra_plot.log 2>&1
 
 
                         # ponemos resultados también en documento efsa
-                        cat ${OUTPUT_PATH}/pipeline/${sample}/checkm/${sample}_checkm.tsv >> ${OUTPUT_PATH}/logs/efsa/${sample}.log
-                        echo "________________________________________" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
+                        cat ${OUTPUT_PATH}/pipeline/${sample}/checkm/${sample}_checkm.tsv >> ${OUTPUT_PATH}/log/efsa/${sample}.log
+                        echo "________________________________________" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
 
                         C4_completeness=$(grep "Completeness" ${OUTPUT_PATH}/pipeline/${sample}/checkm/${sample}_checkm.tsv | awk '{print $2}')
                         C4_contamination=$(grep "Contamination" ${OUTPUT_PATH}/pipeline/${sample}/checkm/${sample}_checkm.tsv | awk '{print $2}')
 
+                        # Extraer la segunda columna y unirla con ';'
+                        vcheckm=$(awk '{print $2}' ${OUTPUT_PATH}/pipeline/${sample}/checkm/${sample}_checkm.tsv | tr '\n' ';')
+
+                        # Eliminar el último ';'
+                        vcheckm=${vcheckm%?}
+
+                        
+
                         if (($(echo "$C4_completeness < $VAR_C4_COMPLETENESS" | bc -l))) || (($(echo "$C4_contamination > $VAR_C4_CONTAMINATION" | bc -l))); then
                             CONTROL4_CHECKM="FAIL"
-                            echo "****************************************" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-                            echo "========================================" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-                            echo "WARNING!" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-                            echo "CHECKM control has not passed" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-                            echo "========================================" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
+                            echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                            echo "========================================" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                            echo "WARNING!" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                            echo "CHECKM control has not passed" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                            echo "========================================" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                         else
                             CONTROL4_CHECKM="PASS"
-                            printf 'STATUS: %s\n' "$CONTROL4_CHECKM" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
+                            printf 'STATUS: %s\n' "$CONTROL4_CHECKM" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
 
                             C4_genome_size=$(grep "out_genome_size_(Mbp)_mean" ${OUTPUT_PATH}/pipeline/${sample}/checkm/${sample}_checkm.tsv | awk '{print $2}')
                             C4_contigs=$(grep "contigs" ${OUTPUT_PATH}/pipeline/${sample}/checkm/${sample}_checkm.tsv | grep -v "N50" | awk '{print $2}')
@@ -569,14 +636,29 @@ fi
                             fi 
 
 
-                            if (($(echo "$C4_N50 < 30000" | bc -l))) || (($(echo "$C4_contigs > $VAR_C4_CONTIGS" | bc -l))) || [[ "$C3_confindr" = "False" ]]; then
+                            if (($(echo "$C4_N50 < 30000" | bc -l))) || (($(echo "$C4_contigs > $VAR_C4_CONTIGS" | bc -l))) || [[ "$C3_confindr" = "True" ]]; then
                                 CONTROL4_CHECKM_quality="ASSEMBLY_QUALITY: BAD"
+                                vCONTROL4_CHECKM_quality="BAD"
+
                             else
                                 CONTROL4_CHECKM_quality="ASSEMBLY_QUALITY: GOOD"
+                                vCONTROL4_CHECKM_quality="GOOD"
+
+
                             fi
 
-                            echo ${CONTROL4_CHECKM_quality} | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
+                            echo ${CONTROL4_CHECKM_quality} | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
             
+
+                            echo "Sample;Fq1;Fq2;Expected_sp;Genome_size;Min_genome_size;Max_genome_size;Max_SNV;Max_Contigs;Read_size;\
+                            Bases_Q30;Cov_Q30;Rate_Q30;Status_Q30;Sp_detected;Status_SP;SNV_detected;Status_SNV;Expected_completeness;Expected_contamination;\
+                            Marker_lineage;Completeness;Contamination;Strain_heterogeneity;Taxonomy_(contained);Genome_size_(Mbp);Gene_count;out_genome_size_(Mbp)_mean;out_genome_size_(Mbp)_std;\
+                            out_gene_count_mean;out_gene_count_std;contigs;N50_(contigs);Status_Contamination;Assembly_quality"  > ${OUTPUT_PATH}"/results/summary.csv"
+                            echo $sample";"$fastq_1";"$fastq_2";"$VAR_C2_SPE";"$VAR_C3_GENOME";"$VAR_C4_GENOME_MIN";"$VAR_C4_GENOME_MAX";"$VAR_C3_SNV";"$VAR_C4_CONTIGS";"$VAR_C1_LENGTH";\
+                            "$BASESQ30";"$COVQ30";"$VALUEQ30";"$CONTROL_1_Q30";"$C2_SPE";"$CONTROL_2_BACT";"$C3_warning";"$CONTROL_3_CONT";"$VAR_C4_COMPLETENESS";"$VAR_C4_CONTAMINATION";\
+                            "$vcheckm";"$CONTROL4_CHECKM";"$vCONTROL4_CHECKM_quality  >> ${OUTPUT_PATH}"/results/summary.csv"
+
+
 
                             ##########################################################
                             #
@@ -608,7 +690,7 @@ fi
                                 # docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} genomicepidemiology/resfinder:4.3.2 \
                                 # -ifa ${OUTPUT_PATH}"/typing/"${sample}/${sample}.contigs.fa \
                                 # -o ${OUTPUT_PATH}"/typing/"${sample}"/AMR" -s ecoli --acquired --point \
-                                # >> ${OUTPUT_PATH}/logs/resfinder/${sample}_resfinder.log 2>&1
+                                # >> ${OUTPUT_PATH}/log/resfinder/${sample}_resfinder.log 2>&1
 
                                 # docker run -it staphb/ncbi-amrfinderplus /bin/bash
                                 # amrfinder -p ecoli.faa --plus -o AMRFinder_complete.tsv --threads 4 --ident_min $(echo "scale=2; 90/100" | bc -l ) \
@@ -618,19 +700,19 @@ fi
                                 #---------------------------------------------------------
                                 # 05.3 MLST y perfil de virulencia
                                 #---------------------------------------------------------
-                                mkdir -p ${OUTPUT_PATH}"/typing/"${sample}"/MLST_VIRULENCE-PROFILE"
-                                mkdir -p ${OUTPUT_PATH}"/typing/"${sample}"/AMR"
+                                mkdir -p ${OUTPUT_PATH}/typing/${sample}/MLST_VIRULENCE-PROFILE
+                                mkdir -p ${OUTPUT_PATH}/typing/${sample}/AMR
 
-                                docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} staphb/mlst:2.23.0 \
+                                docker run --cpus ${THREADS} --rm -u "$(id -u)":"$(id -g)" -v ${OUTPUT_PATH}:${OUTPUT_PATH} staphb/mlst:2.23.0 \
                                 mlst \
                                 --threads ${THREADS} \
-                                ${OUTPUT_PATH}"/typing/"${sample}/${sample}.contigs.fa \
-                                1> ${OUTPUT_PATH}"/typing/"${sample}"/MLST_VIRULENCE-PROFILE/"${sample}"_mlst.out" \
-                                2> ${OUTPUT_PATH}"/typing/"${sample}"/MLST_VIRULENCE-PROFILE/"${sample}"_mlst.log"
+                                ${OUTPUT_PATH}/typing/${sample}/${sample}.contigs.fa \
+                                1> ${OUTPUT_PATH}/typing/${sample}/MLST_VIRULENCE-PROFILE/${sample}_mlst.out \
+                                2> ${OUTPUT_PATH}/typing/${sample}/MLST_VIRULENCE-PROFILE/${sample}_mlst.log
 
                                 # Limpiamos un poco el fichero
-                                var2erase=${OUTPUT_PATH}"/typing/"${sample}/
-                                sed -i "s:^$var2erase::" ${OUTPUT_PATH}"/typing/"${sample}"/MLST_VIRULENCE-PROFILE/"${sample}"_mlst.out"
+                                var2erase=${OUTPUT_PATH}/typing/${sample}/
+                                sed -i "s:^$var2erase::" ${OUTPUT_PATH}/typing/${sample}/MLST_VIRULENCE-PROFILE/${sample}_mlst.out
                                 
                                 # ABRICATE
                                 ##########
@@ -653,9 +735,9 @@ fi
                                 abricate \
                                 --threads ${THREADS} \
                                 --db vfdb \
-                                ${OUTPUT_PATH}"/typing/"${sample}/${sample}.contigs.fa \
-                                1> ${OUTPUT_PATH}"/typing/"${sample}"/MLST_VIRULENCE-PROFILE/"${sample}"_abricate.out" \
-                                2> ${OUTPUT_PATH}"/typing/"${sample}"/MLST_VIRULENCE-PROFILE/"${sample}"_abricate.log"
+                                ${OUTPUT_PATH}/typing/${sample}/${sample}.contigs.fa \
+                                1> ${OUTPUT_PATH}/typing/${sample}/MLST_VIRULENCE-PROFILE/${sample}_abricate.out \
+                                2> ${OUTPUT_PATH}/typing/${sample}/MLST_VIRULENCE-PROFILE/${sample}_abricate.log
 
                                 # Limpiamos un poco el fichero
                                 sed -i "s:^$var2erase::" ${OUTPUT_PATH}"/typing/"${sample}"/MLST_VIRULENCE-PROFILE/"${sample}"_abricate.out"
@@ -668,7 +750,7 @@ fi
                                 ${PATHARIBA}/Salmonella_enterica/ref_db \
                                 ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_1.fastq.gz ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_2.fastq.gz \
                                 ${OUTPUT_PATH}"/typing/"${sample}"/AMR/ariba" \
-			        > ${OUTPUT_PATH}/logs/ariba/${sample}.log 2>&1
+			                    > ${OUTPUT_PATH}/log/ariba/${sample}.log 2>&1
 
                                 #---------------------------------------------------------
                                 # 05.4  Allele calling
@@ -702,18 +784,18 @@ fi
                                 docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHMLST}:${PATHMLST} ummidock/chewbbaca:3.1.2 \
                                 chewBBACA.py AlleleCall \
                                 --cpu ${THREADS} --force-continue \
-                                -i ${OUTPUT_PATH}"/typing/"${sample}/ \
+                                -i ${OUTPUT_PATH}/typing/${sample}/ \
                                 --bsr ${chewBBACA_BLAST_SCORE_RATIO} \
                                 --l ${chewBBACA_MINIMUM_LENGTH} \
                                 --t ${chewBBACA_TRANSLATION_TABLE} \
                                 --st ${chewBBACA_SIZE_THRESHOLD} \
-                                -g ${PATHMLST}"/schema/"${BACT} \
-                                --ptf ${PATHMLST}"/schema/"${BACT}"/"${BACT}".trn" \
-                                -o ${OUTPUT_PATH}"/typing/"${sample}"/ALLELE_CALLING" \
-                                > ${OUTPUT_PATH}/logs/chewbbaca/${sample}_1_allelecall.log 2>&1
+                                -g ${PATHMLST}/schema/${BACT} \
+                                --ptf ${PATHMLST}/schema/${BACT}/${BACT}.trn \
+                                -o ${OUTPUT_PATH}/typing/${sample}/ALLELE_CALLING \
+                                > ${OUTPUT_PATH}/log/chewbbaca/${sample}_1_allelecall.log 2>&1
 
                                 # Get PATH results
-                                PATHALLELE=${OUTPUT_PATH}"/typing/"${sample}"/ALLELE_CALLING/"$(ls ${OUTPUT_PATH}"/typing/"${sample}"/ALLELE_CALLING")
+                                PATHALLELE=${OUTPUT_PATH}/typing/${sample}/ALLELE_CALLING/$(ls ${OUTPUT_PATH}/typing/${sample}/ALLELE_CALLING)
                                 # Paralog detection
                                 ###################
                                 # The next step in the analysis is to determine if some of the loci can be considered paralogs 
@@ -724,7 +806,7 @@ fi
                                 # To remove the set of 10 paralogous loci from the allele calling results, run the following command:
                                 docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHMLST}:${PATHMLST} ummidock/chewbbaca:3.1.2 \
                                 chewBBACA.py RemoveGenes -i ${PATHALLELE}/results_alleles.tsv -g ${PATHALLELE}/paralogous_counts.tsv -o ${PATHALLELE}/results_alleles_NoParalogs.tsv \
-                                > ${OUTPUT_PATH}/logs/chewbbaca/${sample}_2_removegenes.log 2>&1
+                                > ${OUTPUT_PATH}/log/chewbbaca/${sample}_2_removegenes.log 2>&1
 
                                 # Evaluate genome quality NOT AVAILABLE IN THIS chewBBACA VERSION!
                                 # docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHMLST}:${PATHMLST} ummidock/chewbbaca:3.1.2 \
@@ -750,7 +832,7 @@ fi
                                 # by definition, all the loci that are not considered core genome, can be classified as being part of an accessory genome MLST (agMLST) schema.
                                 docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} ummidock/chewbbaca:3.1.2 \
                                 chewBBACA.py ExtractCgMLST -i ${PATHALLELE}/results_alleles.tsv -o ${PATHALLELE} \
-                                > ${OUTPUT_PATH}/logs/chewbbaca/${sample}_3_extractgcmlst.log 2>&1
+                                > ${OUTPUT_PATH}/log/chewbbaca/${sample}_3_extractgcmlst.log 2>&1
 
                             elif [[ "$VAR_C2_SPE" = "Listeria monocytogenes" ]]; then
                                 #---------------------------------------------------------
@@ -761,17 +843,26 @@ fi
                                 # (cd ${OUTPUT_PATH}/pipeline/${sample}/BACTpipe_results/shovill && lissero ${sample}.contigs.fa >> ${OUTPUT_PATH}/pipeline/${sample}/${sample}.lissero.txt 2>&1)
                                 # var2erase=${OUTPUT_PATH}/pipeline/${sample}/BACTpipe_results/shovill/
                                 #IMPORTANTE EN SED SE EMPLEA ":" PARA SEPARAS CAMPOS Y PODER ELIMINAR PATH PARCIAL
-                                # lissero ${OUTPUT_PATH}/pipeline/${sample}/BACTpipe_results/shovill/${sample}.contigs.fa --logfile ${OUTPUT_PATH}/logs/lissero/${sample}.log | sed "s:^$var2erase::" > ${OUTPUT_PATH}/pipeline/${sample}/${sample}.lissero.txt
+                                # lissero ${OUTPUT_PATH}/pipeline/${sample}/BACTpipe_results/shovill/${sample}.contigs.fa --logfile ${OUTPUT_PATH}/log/lissero/${sample}.log | sed "s:^$var2erase::" > ${OUTPUT_PATH}/pipeline/${sample}/${sample}.lissero.txt
 
                                 #---------------------------------------------------------
                                 # 05.2 Detección de AMR
                                 #---------------------------------------------------------
-                                # mkdir -p ${OUTPUT_PATH}"/typing/"${sample}"/AMR"
+				
+				                # campylobacter jejuni	cjejuni
+                                # campylobacter coli	ccoli
+                                # escherichia coli	ecoli
+                                # salmonella enterica	senterica
+				                mkdir -p ${OUTPUT_PATH}"/typing/"${sample}"/AMR/resfinder"
+                                docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} genomicepidemiology/resfinder:4.3.2 \
+                                -ifa ${OUTPUT_PATH}"/typing/"${sample}/${sample}.contigs.fa \
+                                -o ${OUTPUT_PATH}"/typing/"${sample}"/AMR/resfinder" -s senterica --acquired --point \
+                                >> ${OUTPUT_PATH}/log/resfinder/${sample}_resfinder.log 2>&1
 
                                 # docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} genomicepidemiology/resfinder:4.3.2 \
                                 # -ifa ${OUTPUT_PATH}"/typing/"${sample}/${sample}.contigs.fa \
                                 # -o ${OUTPUT_PATH}"/typing/"${sample}"/AMR" -s ecoli --acquired --point \
-                                # >> ${OUTPUT_PATH}/logs/resfinder/${sample}_resfinder.log 2>&1
+                                # >> ${OUTPUT_PATH}/log/resfinder/${sample}_resfinder.log 2>&1
 
                                 # docker run -it staphb/ncbi-amrfinderplus /bin/bash
                                 # amrfinder -p ecoli.faa --plus -o AMRFinder_complete.tsv --threads 4 --ident_min $(echo "scale=2; 90/100" | bc -l ) \
@@ -792,7 +883,7 @@ fi
                                 2> ${OUTPUT_PATH}"/typing/"${sample}"/MLST_VIRULENCE-PROFILE/"${sample}"_mlst.log"
 
                                 # Limpiamos un poco el fichero
-                                var2erase=${OUTPUT_PATH}"/typing/"${sample}/
+                                var2erase=${OUTPUT_PATH}/typing/${sample}/
                                 sed -i "s:^$var2erase::" ${OUTPUT_PATH}"/typing/"${sample}"/MLST_VIRULENCE-PROFILE/"${sample}"_mlst.out"
                                 
                                 # ABRICATE
@@ -831,7 +922,7 @@ fi
                                 ${PATHARIBA}/Listeria_monocytogenes/ref_db \
                                 ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_1.fastq.gz ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_2.fastq.gz \
                                 ${OUTPUT_PATH}"/typing/"${sample}"/AMR/ariba" \
-				> ${OUTPUT_PATH}/logs/ariba/${sample}.log 2>&1
+				                > ${OUTPUT_PATH}/log/ariba/${sample}.log 2>&1
 
                                 #---------------------------------------------------------
                                 # 05.4  Allele calling
@@ -865,18 +956,18 @@ fi
                                 docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHMLST}:${PATHMLST} ummidock/chewbbaca:3.1.2 \
                                 chewBBACA.py AlleleCall \
                                 --cpu ${THREADS} --force-continue \
-                                -i ${OUTPUT_PATH}"/typing/"${sample}/ \
+                                -i ${OUTPUT_PATH}/typing/${sample}/ \
                                 --bsr ${chewBBACA_BLAST_SCORE_RATIO} \
                                 --l ${chewBBACA_MINIMUM_LENGTH} \
                                 --t ${chewBBACA_TRANSLATION_TABLE} \
                                 --st ${chewBBACA_SIZE_THRESHOLD} \
-                                -g ${PATHMLST}"/schema/"${BACT} \
-                                --ptf ${PATHMLST}"/schema/"${BACT}"/"${BACT}".trn" \
-                                -o ${OUTPUT_PATH}"/typing/"${sample}"/ALLELE_CALLING" \
-                                > ${OUTPUT_PATH}/logs/chewbbaca/${sample}_1_allelecall.log 2>&1
+                                -g ${PATHMLST}/schema/${BACT} \
+                                --ptf ${PATHMLST}/schema/${BACT}/${BACT}.trn \
+                                -o ${OUTPUT_PATH}/typing/${sample}/ALLELE_CALLING \
+                                > ${OUTPUT_PATH}/log/chewbbaca/${sample}_1_allelecall.log 2>&1
 
                                 # Get PATH results
-                                PATHALLELE=${OUTPUT_PATH}"/typing/"${sample}"/ALLELE_CALLING/"$(ls ${OUTPUT_PATH}"/typing/"${sample}"/ALLELE_CALLING")
+                                PATHALLELE=${OUTPUT_PATH}/typing/${sample}/ALLELE_CALLING/$(ls ${OUTPUT_PATH}/typing/${sample}/ALLELE_CALLING)
                                 # Paralog detection
                                 ###################
                                 # The next step in the analysis is to determine if some of the loci can be considered paralogs 
@@ -887,7 +978,7 @@ fi
                                 # To remove the set of 10 paralogous loci from the allele calling results, run the following command:
                                 docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHMLST}:${PATHMLST} ummidock/chewbbaca:3.1.2 \
                                 chewBBACA.py RemoveGenes -i ${PATHALLELE}/results_alleles.tsv -g ${PATHALLELE}/paralogous_counts.tsv -o ${PATHALLELE}/results_alleles_NoParalogs.tsv \
-                                > ${OUTPUT_PATH}/logs/chewbbaca/${sample}_2_removegenes.log 2>&1
+                                > ${OUTPUT_PATH}/log/chewbbaca/${sample}_2_removegenes.log 2>&1
 
                                 # Evaluate genome quality NOT AVAILABLE IN THIS chewBBACA VERSION!
                                 # docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHMLST}:${PATHMLST} ummidock/chewbbaca:3.1.2 \
@@ -913,7 +1004,7 @@ fi
                                 # by definition, all the loci that are not considered core genome, can be classified as being part of an accessory genome MLST (agMLST) schema.
                                 docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} ummidock/chewbbaca:3.1.2 \
                                 chewBBACA.py ExtractCgMLST -i ${PATHALLELE}/results_alleles.tsv -o ${PATHALLELE} \
-                                > ${OUTPUT_PATH}/logs/chewbbaca/${sample}_3_extractgcmlst.log 2>&1
+                                > ${OUTPUT_PATH}/log/chewbbaca/${sample}_3_extractgcmlst.log 2>&1
 
                             elif [[ "$VAR_C2_SPE" = "Escherichia coli" ]]; then
 
@@ -931,24 +1022,24 @@ fi
                                 --org Escherichia coli \
                                 --fastq ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_1.fastq.gz ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_2.fastq.gz \
                                 -o ${OUTPUT_PATH}/typing/${sample}/SERO-PATHO_typing/seq_typing \
-                                -j ${THREADS} >> ${OUTPUT_PATH}/logs/patho_typing/${sample}_seq_typing.log 2>&1
+                                -j ${THREADS} >> ${OUTPUT_PATH}/log/patho_typing/${sample}_seq_typing.log 2>&1
                                 # PATHO_typing
                                 docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} ummidock/patho_typing:0.3.0-1 \
                                 patho_typing.py \
                                 -s Escherichia coli \
                                 -f ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_1.fastq.gz ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_2.fastq.gz \
                                 -o ${OUTPUT_PATH}/typing/${sample}/SERO-PATHO_typing/patho_typing \
-                                -j ${THREADS} >> ${OUTPUT_PATH}/logs/patho_typing/${sample}_patho_typing.log 2>&1
+                                -j ${THREADS} >> ${OUTPUT_PATH}/log/patho_typing/${sample}_patho_typing.log 2>&1
                                 
                                 #---------------------------------------------------------
                                 # 05.2 Detección de AMR
                                 #---------------------------------------------------------
-                                mkdir -p ${OUTPUT_PATH}"/typing/"${sample}"/AMR"
+                                mkdir -p ${OUTPUT_PATH}"/typing/"${sample}"/AMR/resfinder"
 
                                 docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} genomicepidemiology/resfinder:4.3.2 \
                                 -ifa ${OUTPUT_PATH}"/typing/"${sample}/${sample}.contigs.fa \
-                                -o ${OUTPUT_PATH}"/typing/"${sample}"/AMR" -s ecoli --acquired --point \
-                                >> ${OUTPUT_PATH}/logs/resfinder/${sample}_resfinder.log 2>&1
+                                -o ${OUTPUT_PATH}"/typing/"${sample}"/AMR/resfinder" -s ecoli --acquired --point \
+                                >> ${OUTPUT_PATH}/log/resfinder/${sample}_resfinder.log 2>&1
 
                                 #---------------------------------------------------------
                                 # 05.3 MLST y perfil de virulencia
@@ -959,13 +1050,13 @@ fi
                                 docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} staphb/mlst:2.23.0 \
                                 mlst \
                                 --threads ${THREADS} \
-                                ${OUTPUT_PATH}"/typing/"${sample}/${sample}.contigs.fa \
-                                1> ${OUTPUT_PATH}"/typing/"${sample}"/MLST_VIRULENCE-PROFILE/"${sample}"_mlst.out" \
-                                2> ${OUTPUT_PATH}"/typing/"${sample}"/MLST_VIRULENCE-PROFILE/"${sample}"_mlst.log"
+                                ${OUTPUT_PATH}/typing/${sample}/${sample}.contigs.fa \
+                                1> ${OUTPUT_PATH}/typing/${sample}/MLST_VIRULENCE-PROFILE/${sample}_mlst.out \
+                                2> ${OUTPUT_PATH}/typing/${sample}/MLST_VIRULENCE-PROFILE/${sample}_mlst.log
 
                                 # Limpiamos un poco el fichero
-                                var2erase=${OUTPUT_PATH}"/typing/"${sample}/
-                                sed -i "s:^$var2erase::" ${OUTPUT_PATH}"/typing/"${sample}"/MLST_VIRULENCE-PROFILE/"${sample}"_mlst.out"
+                                var2erase=${OUTPUT_PATH}/typing/${sample}/
+                                sed -i "s:^$var2erase::" ${OUTPUT_PATH}/typing/${sample}/MLST_VIRULENCE-PROFILE/${sample}_mlst.out
                                 
                                 # ABRICATE
                                 ##########
@@ -1014,7 +1105,7 @@ fi
                                 ${PATHARIBA}/Escherichia_coli1/ref_db \
                                 ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_1.fastq.gz ${OUTPUT_PATH}/pipeline/${sample}/fastq/${sample}_2.fastq.gz \
                                 ${OUTPUT_PATH}"/typing/"${sample}"/AMR/ariba" \
-				> ${OUTPUT_PATH}/logs/ariba/${sample}.log 2>&1
+				                > ${OUTPUT_PATH}/log/ariba/${sample}.log 2>&1
 
                                 #---------------------------------------------------------
                                 # 05.4  Allele calling
@@ -1048,18 +1139,18 @@ fi
                                 docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHMLST}:${PATHMLST} ummidock/chewbbaca:3.1.2 \
                                 chewBBACA.py AlleleCall \
                                 --cpu ${THREADS} --force-continue \
-                                -i ${OUTPUT_PATH}"/typing/"${sample}/ \
+                                -i ${OUTPUT_PATH}/typing/${sample}/ \
                                 --bsr ${chewBBACA_BLAST_SCORE_RATIO} \
                                 --l ${chewBBACA_MINIMUM_LENGTH} \
                                 --t ${chewBBACA_TRANSLATION_TABLE} \
                                 --st ${chewBBACA_SIZE_THRESHOLD} \
-                                -g ${PATHMLST}"/schema/"${BACT} \
-                                --ptf ${PATHMLST}"/schema/"${BACT}"/"${BACT}".trn" \
-                                -o ${OUTPUT_PATH}"/typing/"${sample}"/ALLELE_CALLING" \
-                                > ${OUTPUT_PATH}/logs/chewbbaca/${sample}_1_allelecall.log 2>&1
+                                -g ${PATHMLST}/schema/${BACT} \
+                                --ptf ${PATHMLST}/schema/${BACT}/${BACT}.trn \
+                                -o ${OUTPUT_PATH}/typing/${sample}/ALLELE_CALLING \
+                                > ${OUTPUT_PATH}/log/chewbbaca/${sample}_1_allelecall.log 2>&1
 
                                 # Get PATH results
-                                PATHALLELE=${OUTPUT_PATH}"/typing/"${sample}"/ALLELE_CALLING/"$(ls ${OUTPUT_PATH}"/typing/"${sample}"/ALLELE_CALLING")
+                                PATHALLELE=${OUTPUT_PATH}/typing/${sample}/ALLELE_CALLING/$(ls ${OUTPUT_PATH}/typing/${sample}/ALLELE_CALLING)
                                 # Paralog detection
                                 ###################
                                 # The next step in the analysis is to determine if some of the loci can be considered paralogs 
@@ -1070,7 +1161,7 @@ fi
                                 # To remove the set of 10 paralogous loci from the allele calling results, run the following command:
                                 docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHMLST}:${PATHMLST} ummidock/chewbbaca:3.1.2 \
                                 chewBBACA.py RemoveGenes -i ${PATHALLELE}/results_alleles.tsv -g ${PATHALLELE}/paralogous_counts.tsv -o ${PATHALLELE}/results_alleles_NoParalogs.tsv \
-                                > ${OUTPUT_PATH}/logs/chewbbaca/${sample}_2_removegenes.log 2>&1
+                                > ${OUTPUT_PATH}/log/chewbbaca/${sample}_2_removegenes.log 2>&1
 
                                 # Evaluate genome quality NOT AVAILABLE IN THIS chewBBACA VERSION!
                                 # docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHMLST}:${PATHMLST} ummidock/chewbbaca:3.1.2 \
@@ -1097,31 +1188,37 @@ fi
                                 # by definition, all the loci that are not considered core genome, can be classified as being part of an accessory genome MLST (agMLST) schema.
                                 docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} ummidock/chewbbaca:3.1.2 \
                                 chewBBACA.py ExtractCgMLST -i ${PATHALLELE}/results_alleles.tsv -o ${PATHALLELE} \
-                                > ${OUTPUT_PATH}/logs/chewbbaca/${sample}_3_extractgcmlst.log 2>&1
+                                > ${OUTPUT_PATH}/log/chewbbaca/${sample}_3_extractgcmlst.log 2>&1
                             elif [[ "$VAR_C2_SPE" = "Yersinia enterocolitica" ]]; then
                                 p=2
                             elif [[ "$VAR_C2_SPE" = "Campylobacter jenuni" ]]; then
                                 p=2
+
+                            elif [[ "$VAR_C2_SPE" = "Klebsiella pneumoniae" ]]; then
+                                # Ejecutar Kleborate
+                                kleborate -o kleborate_results.txt -a spades_output/contigs.fasta
+                                # Aquí podrías añadir código para extraer MLST, cgMLST, y otros resultados del archivo kleborate_results.txt
+
                             fi
                         fi
                     else
-                        echo "****************************************" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-                        printf '%s FAILED IN CONTAMINATION CHECK\n' "$sample" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-                        echo "****************************************" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
+                        echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                        printf '%s FAILED IN CONTAMINATION CHECK\n' "$sample" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                        echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                         conda deactivate
                     fi
                 fi
             else
-                echo "****************************************" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-                printf '%s FAILED IN SPECIES CHECK\n' "$sample" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-                echo "****************************************" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
+                echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                printf '%s FAILED IN SPECIES CHECK\n' "$sample" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                 conda deactivate
             fi
 
         else
-            echo "****************************************" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-            printf '%s FAILED IN Q30 CHECK\n' "$sample" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
-            echo "****************************************" | tee -a ${OUTPUT_PATH}/logs/efsa/${sample}.log
+            echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+            printf '%s FAILED IN Q30 CHECK\n' "$sample" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+            echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
             conda deactivate
         fi
 
