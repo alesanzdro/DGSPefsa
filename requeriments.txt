@@ -171,13 +171,84 @@ ENV HTTPS_PROXY="http://193.145.201.49:8080"
 ENV http_proxy="http://193.145.201.49:8080"
 ENV https_proxy="http://193.145.201.49:8080"
 docker build -t ummidock/patho_typing ./docker-images/patho_typing/
-docker pull genomicepidemiology/resfinder:4.3.2
+docker pull genomicepidemiology/resfinder:4.3.3
 
 docker pull staphb/seqsero2:1.2.1
 
 
+############################################# scheme Campylobacter_jejuni
+CONDAPATH="/software/miniconda3/envs"
+${CONDAPATH}/dgsp_efsa_sp
+cd /software/resources/dgsp/cgMLST_data/
+cp -r ~/.confindr_db/database_Campylobacter_cgMLST/ /software/resources/dgsp/cgMLST_data/Campylobacter_jejuni
+
+chewBBACA_BLAST_SCORE_RATIO=0.6
+chewBBACA_MINIMUM_LENGTH=0
+chewBBACA_TRANSLATION_TABLE=11
+chewBBACA_SIZE_THRESHOLD=0.2
+BACT=Campylobacter_jejuni
+
+OUTPUT_PATH22=/software/resources/dgsp/cgMLST_data/Campylobacter_jejuni
+# Ya venimos con el esquema descargado y adaptado según las especificaciones de la EFSA
+docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH22}:${OUTPUT_PATH22} ummidock/chewbbaca:3.1.2 \
+chewBBACA.py CreateSchema \
+--cpu ${THREADS} \
+-i "/software/resources/dgsp/cgMLST_data/Campylobacter_jejuni" \
+--bsr ${chewBBACA_BLAST_SCORE_RATIO} \
+--l ${chewBBACA_MINIMUM_LENGTH} \
+--t ${chewBBACA_TRANSLATION_TABLE} \
+--st ${chewBBACA_SIZE_THRESHOLD} \
+-o "/software/resources/dgsp/cgMLST_data/Campylobacter_jejuni/scheme"
+
+
+PATHMLST="/software/resources/dgsp/cgMLST_data"
+
+docker run --cpus ${THREADS} --rm -u $(id -u):$(id -g) -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${OUTPUT_PATH22}:${OUTPUT_PATH22} ummidock/chewbbaca:3.1.2 \
+        chewBBACA.py AlleleCall \
+        --cpu ${THREADS} --force-continue \
+        -i ${OUTPUT_PATH}/typing/${sample}/ \
+        --bsr ${chewBBACA_BLAST_SCORE_RATIO} \
+        --l ${chewBBACA_MINIMUM_LENGTH} \
+        --t ${chewBBACA_TRANSLATION_TABLE} \
+        --st ${chewBBACA_SIZE_THRESHOLD} \
+        -g /software/resources/dgsp/cgMLST_data/Campylobacter_jejuni/scheme/ \
+        -o ${OUTPUT_PATH}/typing/${sample}/ALLELE_CALLING \
+        > ${OUTPUT_PATH}/log/chewbbaca/${sample}_1_allelecall.log 
+
 
 # FIN INSTALACIÓN
+
+
+
+
+
+
+
+Project_Name/
+|-- README.md (or .txt)   # Descripción del proyecto, metadatos, etc.
+|-- Data/
+|   |-- Raw/             # Datos de secuenciación brutos
+|   |-- Cleaned/         # Datos de secuenciación limpios/post-procesamiento
+|
+|-- Analyses/
+|   |-- Typing/
+|       |-- MLST/        # Análisis y datos relacionados con MLST
+|       |-- AMR/         # Análisis y datos relacionados con la resistencia a antibióticos (Antimicrobial Resistance)
+|   |-- Virulence_Profile/  # Análisis y datos relacionados con el perfil de virulencia
+|
+|-- Scripts/             # Scripts y códigos utilizados en el análisis
+|
+|-- Results/
+|   |-- Figures/         # Gráficos generados durante el análisis
+|   |-- Tables/          # Tablas generadas durante el análisis
+|
+|-- Logs/                # Archivos de logs (registros de análisis, etc.)
+|
+|-- Supplementary_Materials/  # Materiales suplementarios (puede incluir literatura relevante, etc.)
+
+
+
+
 
 ###################################################################################
 ###################################################################################
@@ -221,6 +292,8 @@ ariba pubmlstget "Escherichia coli#1" /software/resources/ariba/Escherichia_coli
 ariba pubmlstget "Escherichia coli#2" /software/resources/ariba/Escherichia_coli2/
 ariba pubmlstget "Listeria monocytogenes" /software/resources/ariba/Listeria_monocytogenes/
 ariba pubmlstget "Salmonella enterica" /software/resources/ariba/Salmonella_enterica/
+
+ariba pubmlstget "Campylobacter jejuni" /software/resources/ariba/Campylobacter_jejuni/
 
 
 docker run -it \
