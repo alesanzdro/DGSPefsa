@@ -24,15 +24,15 @@
 # Log functions
 ################################################################################
 # Print and log messages in LOG_FILE
-log_string() {
-    echo -e "$@" | tee -a ${LOG_FILE}
-}
+# log_string() {
+#     echo -e "$@" | tee -a ${LOG_FILE}
+# }
 
-# Run a command and log any message printed to stdout in LOG_FILE
-log_command() {
-    echo -e "$@" | tee -a ${LOG_FILE}
-    echo "$@" | bash 2>>${LOG_FILE} | tee -a ${LOG_FILE}
-}
+# # Run a command and log any message printed to stdout in LOG_FILE
+# log_command() {
+#     echo -e "$@" | tee -a ${LOG_FILE}
+#     echo "$@" | bash 2>>${LOG_FILE} | tee -a ${LOG_FILE}
+# }
 
 
 # REVISAR EJEMPLO USO DOCKER
@@ -51,7 +51,7 @@ OUTPUT_PATH="/ALMEIDA/PROJECTS/BACTERIAS/DGSP/DGSPefsa/sample_data/ANALYSIS/"${R
 CONDAPATH="/software/miniconda3/envs"
 RESOURCES="/ALMEIDA/PROJECTS/BACTERIAS/DGSP/DGSPefsa/resources"
 THREADS=20
-SPADESMEM=64
+# SPADESMEM=64
 VAR_C1_LENGTH=301
 VAR_C4_COMPLETENESS=98
 VAR_C4_CONTAMINATION=2
@@ -60,7 +60,7 @@ PATHARIBA=${RESOURCES}/ariba
 PATHcgMLST=${RESOURCES}/cgMLST_data
 PATHCONFINDR=${RESOURCES}/confindr_db
 PATHMASH=${RESOURCES}/mash/refseq.genomes.k21s1000.msh
-PATHMLST=${RESOURCES}/pubmlst
+# PATHMLST=${RESOURCES}/pubmlst
 
 
 export PERL5LIB=/software/miniconda3/envs/dgsp_efsa_sp/lib/perl5/5.32
@@ -87,7 +87,6 @@ if [[ ! -e ${OUTPUT_PATH} ]]; then
     mkdir -p ${OUTPUT_PATH}/tmp/pipeline
 
 
-
     # En la carpeta pipeline es donde correremos innuca, bactpipe, confindr... los controles de calidad
     #mkdir -p ${OUTPUT_PATH}"/pipeline"
   
@@ -104,7 +103,7 @@ if [[ ! -e ${OUTPUT_PATH} ]]; then
     mkdir -p ${OUTPUT_PATH}"/1_qc/fastqc_raw"
     mkdir -p ${OUTPUT_PATH}"/1_qc/fastqc_trim"
     mkdir -p ${OUTPUT_PATH}"/1_qc/fastp"
-    mkdir -p ${OUTPUT_PATH}"/1_qc/multiqc"
+    #mkdir -p ${OUTPUT_PATH}"/1_qc/multiqc"
 
     mkdir -p ${OUTPUT_PATH}"/log/fastp"
     mkdir -p ${OUTPUT_PATH}"/log/efsa"
@@ -131,7 +130,7 @@ Status_SNV,Expected_completeness,Expected_contamination,Marker_lineage,Completen
 Strain_heterogeneity,Taxonomy_(contained),Genome_size_(Mbp),Gene_count,out_genome_size_(Mbp)_mean,\
 out_genome_size_(Mbp)_std,out_gene_count_mean,out_gene_count_std,contigs,N50_(contigs),\
 Status_Contamination,Assembly_quality,ST,MLST,Antigenic_profile,ST_patho,cgmlst_ST,h1,h2,o_antigen,serovar,Resistance_genes,\
-Antimicrobial(class),Gene_mut(resistance)"  > ${OUTPUT_PATH}/4_results/${DATE}_summary.csv
+Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_summary.csv"
 
 
 ##########################################################
@@ -147,7 +146,7 @@ Antimicrobial(class),Gene_mut(resistance)"  > ${OUTPUT_PATH}/4_results/${DATE}_s
 
 # Con el extra read, eliminamos la primera línea, en teoría los valores son reales
 {
-    read
+    read -r
     while IFS=, read -r sample fastq_1 fastq_2; do
         echo "$sample FASTQ1: $fastq_1 FASTQ2: $fastq_2"
 
@@ -236,12 +235,12 @@ Antimicrobial(class),Gene_mut(resistance)"  > ${OUTPUT_PATH}/4_results/${DATE}_s
         ################################################################################
         # FastQC Quality RAW
         ################################################################################
-        fastqc --quiet --threads ${THREADS} -outdir ${OUTPUT_PATH}/1_qc/fastqc_raw ${IR}/${fastq_1} ${IR}/${fastq_2}
+        fastqc --quiet --threads ${THREADS} -outdir ${OUTPUT_PATH}/1_qc/fastqc_raw "${IR}/${fastq_1}" "${IR}/${fastq_2}"
 
         ################################################################################
         # FastP Quality  trimming
         ################################################################################
-        fastp --thread ${THREADS} --in1 ${IR}/${fastq_1} --in2 ${IR}/${fastq_2} \
+        fastp --thread ${THREADS} --in1 "${IR}/${fastq_1}" --in2 "${IR}/${fastq_2}" \
             --cut_tail --cut_window_size=10 --cut_mean_quality=20 --length_required=50 --correction \
             --json ${OUTPUT_PATH}/1_qc/fastp/${sample}.report.fastp.json --html ${OUTPUT_PATH}/1_qc/fastp/${sample}.report.fastp.html \
             --out1 ${OUTPUT_PATH}/0_fastq/${sample}_1.fastq.gz --out2 ${OUTPUT_PATH}/0_fastq/${sample}_2.fastq.gz >> ${OUTPUT_PATH}/log/fastp/${sample}.log 2>&1
@@ -458,7 +457,7 @@ Antimicrobial(class),Gene_mut(resistance)"  > ${OUTPUT_PATH}/4_results/${DATE}_s
                     repinnuca=$(ls ${OUTPUT_PATH}/tmp/pipeline/${sample}/INNUca/samples_report.*)
                     C3_innuca=$(awk -F "\t" '{print $3}' $repinnuca | tail -n 1)
 
-                    if [[ "$C3_confindr" = "False" ]] && [[ "$C3_innuca" = "PASS" ]]; then
+                    if [[ "$C3_confindr" = "False" ]] && { [[ "$C3_innuca" = "PASS" ]] || [[ "$C3_innuca" = "WARNING" ]]; }; then
 
                         CONTROL_3_CONT="PASS"
                         printf 'STATUS: %s\n' "$CONTROL_3_CONT" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
@@ -749,6 +748,9 @@ Antimicrobial(class),Gene_mut(resistance)"  > ${OUTPUT_PATH}/4_results/${DATE}_s
                                     RESFINDER_MUTS="-"
                                 fi
 
+                                [ -z "$RESFINDER_GENES" ] && RESFINDER_GENES="-"
+                                [ -z "$RESFINDER_RESISTANT" ] && RESFINDER_RESISTANT="-"
+                                [ -z "$RESFINDER_MUTS" ] && RESFINDER_MUTS="-"
                                 # docker run -it staphb/ncbi-amrfinderplus /bin/bash
                                 # amrfinder -p ecoli.faa --plus -o AMRFinder_complete.tsv --threads 4 --ident_min $(echo "scale=2; 90/100" | bc -l ) \
                                 # --coverage_min $(echo "scale=2; 80/100" | bc -l ) --name ecoli --protein_output ecoli_args.faa --database /amrfinder/data/2023-04-17.1 
@@ -1013,6 +1015,9 @@ Antimicrobial(class),Gene_mut(resistance)"  > ${OUTPUT_PATH}/4_results/${DATE}_s
                                     RESFINDER_MUTS="-"
                                 fi
 
+                                [ -z "$RESFINDER_GENES" ] && RESFINDER_GENES="-"
+                                [ -z "$RESFINDER_RESISTANT" ] && RESFINDER_RESISTANT="-"
+                                [ -z "$RESFINDER_MUTS" ] && RESFINDER_MUTS="-"
                                 # docker run -it staphb/ncbi-amrfinderplus /bin/bash
                                 # amrfinder -p ecoli.faa --plus -o AMRFinder_complete.tsv --threads 4 --ident_min $(echo "scale=2; 90/100" | bc -l ) \
                                 # --coverage_min $(echo "scale=2; 80/100" | bc -l ) --name ecoli --protein_output ecoli_args.faa --database /amrfinder/data/2023-04-17.1 
@@ -1215,7 +1220,8 @@ Antimicrobial(class),Gene_mut(resistance)"  > ${OUTPUT_PATH}/4_results/${DATE}_s
                                     STVAR_2="-"
                                 fi
 
-                                STPATHO=$STVAR_1"_"$STVAR_2
+                                STANTI=$STVAR_1
+                                STPATHO=$STVAR_2
 
                                 #---------------------------------------------------------
                                 # 05.2 Detección de AMR
@@ -1248,6 +1254,9 @@ Antimicrobial(class),Gene_mut(resistance)"  > ${OUTPUT_PATH}/4_results/${DATE}_s
                                     RESFINDER_MUTS="-"
                                 fi
 
+                                [ -z "$RESFINDER_GENES" ] && RESFINDER_GENES="-"
+                                [ -z "$RESFINDER_RESISTANT" ] && RESFINDER_RESISTANT="-"
+                                [ -z "$RESFINDER_MUTS" ] && RESFINDER_MUTS="-"
                                 # docker run -it staphb/ncbi-amrfinderplus /bin/bash
                                 # amrfinder -p ecoli.faa --plus -o AMRFinder_complete.tsv --threads 4 --ident_min $(echo "scale=2; 90/100" | bc -l ) \
                                 # --coverage_min $(echo "scale=2; 80/100" | bc -l ) --name ecoli --protein_output ecoli_args.faa --database /amrfinder/data/2023-04-17.1 
@@ -1380,10 +1389,19 @@ Antimicrobial(class),Gene_mut(resistance)"  > ${OUTPUT_PATH}/4_results/${DATE}_s
 
                                 echo -e "$sample,$fastq_1,$fastq_2,$VAR_C2_SPE,$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,$CONTROL_1_Q30,$C2_SPE,$CONTROL_2_BACT,$C3_warning,$CONTROL_3_CONT,$VAR_C4_COMPLETENESS,$VAR_C4_CONTAMINATION,$vcheckm,$CONTROL4_CHECKM,$vCONTROL4_CHECKM_quality,$STVAR,$MLST,$STANTI,$STPATHO,$ST_CGMLST,$ST_H1,$ST_H2,$ST_O_antigen,$SEROVAR,$RESFINDER_GENES,$RESFINDER_RESISTANT,$RESFINDER_MUTS" >> "${OUTPUT_PATH}/4_results/${DATE}_summary.csv"
                     
-                                
-                            # elif [[ "$VAR_C2_SPE" = "Yersinia enterocolitica" ]]; then
-                            #     p=2
                             elif [[ "$VAR_C2_SPE" = "Campylobacter jenuni" ]]; then
+
+                                #---------------------------------------------------------
+                                # 05.0 Declaramos variables que no recogemos en esta especie
+                                #---------------------------------------------------------
+                                STANTI="-"
+                                STPATHO="-"
+                                ST_CGMLST="-"
+                                ST_H1="-"
+                                ST_H2="-"
+                                ST_O_antigen="-"
+                                SEROVAR="-"
+
                                 #---------------------------------------------------------
                                 # 05.2 Detección de AMR
                                 #---------------------------------------------------------
@@ -1415,6 +1433,9 @@ Antimicrobial(class),Gene_mut(resistance)"  > ${OUTPUT_PATH}/4_results/${DATE}_s
                                     RESFINDER_MUTS="-"
                                 fi
 
+                                [ -z "$RESFINDER_GENES" ] && RESFINDER_GENES="-"
+                                [ -z "$RESFINDER_RESISTANT" ] && RESFINDER_RESISTANT="-"
+                                [ -z "$RESFINDER_MUTS" ] && RESFINDER_MUTS="-"
                                 # docker run -it staphb/ncbi-amrfinderplus /bin/bash
                                 # amrfinder -p ecoli.faa --plus -o AMRFinder_complete.tsv --threads 4 --ident_min $(echo "scale=2; 90/100" | bc -l ) \
                                 # --coverage_min $(echo "scale=2; 80/100" | bc -l ) --name ecoli --protein_output ecoli_args.faa --database /amrfinder/data/2023-04-17.1 
@@ -1481,9 +1502,8 @@ Antimicrobial(class),Gene_mut(resistance)"  > ${OUTPUT_PATH}/4_results/${DATE}_s
                                 ${OUTPUT_PATH}/3_typing/ariba/${sample} \
 			                    > ${OUTPUT_PATH}/log/ariba/${sample}.log 2>&1
 
-                                echo -e "$sample,$fastq_1,$fastq_2,$VAR_C2_SPE,$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,$CONTROL_1_Q30,$C2_SPE,$CONTROL_2_BACT,$C3_warning,$CONTROL_3_CONT,$VAR_C4_COMPLETENESS,$VAR_C4_CONTAMINATION,$vcheckm,$CONTROL4_CHECKM,$vCONTROL4_CHECKM_quality,$STVAR,$STPATHO,$ST_CGMLST,$ST_H1,$ST_H2,$ST_O_antigen,$SEROVAR,$RESFINDER_GENES,$RESFINDER_RESISTANT,$RESFINDER_MUTS,$MLST" >> "${OUTPUT_PATH}/4_results/${DATE}_summary.csv"
+                                echo -e "$sample,$fastq_1,$fastq_2,$VAR_C2_SPE,$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,$CONTROL_1_Q30,$C2_SPE,$CONTROL_2_BACT,$C3_warning,$CONTROL_3_CONT,$VAR_C4_COMPLETENESS,$VAR_C4_CONTAMINATION,$vcheckm,$CONTROL4_CHECKM,$vCONTROL4_CHECKM_quality,$STVAR,$MLST,$STANTI,$STPATHO,$ST_CGMLST,$ST_H1,$ST_H2,$ST_O_antigen,$SEROVAR,$RESFINDER_GENES,$RESFINDER_RESISTANT,$RESFINDER_MUTS" >> "${OUTPUT_PATH}/4_results/${DATE}_summary.csv"
                             fi
-
                             # RESETAMOS VARIABLES A "-"
                             var_reset=(sample fastq_1 fastq_2 VAR_C2_SPE VAR_C3_GENOME VAR_C4_GENOME_MIN VAR_C4_GENOME_MAX VAR_C3_SNV VAR_C4_CONTIGS
                                         BASESQ30 COVQ30 VALUEQ30 CONTROL_1_Q30 C2_SPE CONTROL_2_BACT C3_warning CONTROL_3_CONT
@@ -1493,6 +1513,7 @@ Antimicrobial(class),Gene_mut(resistance)"  > ${OUTPUT_PATH}/4_results/${DATE}_s
                             for varr in "${var_reset[@]}"
                             do
                                 eval "$varr='-'"
+                                #unset $varr
                             done
                         fi
                     else
@@ -1518,3 +1539,6 @@ Antimicrobial(class),Gene_mut(resistance)"  > ${OUTPUT_PATH}/4_results/${DATE}_s
 
     done
 } <"${SAMPLESHEET}"
+
+conda activate ${CONDAPATH}/dgsp_efsa_sp
+multiqc -o ${OUTPUT_PATH}/4_results/${DATE}_multiqc ${OUTPUT_PATH}
