@@ -129,6 +129,19 @@ curl -o ${DBlm}/lhkA.tfa https://bigsdb.pasteur.fr/api/db/pubmlst_listeria_seqde
 # /software/miniconda3/envs/dgsp_efsa_contamination/bin/mlst-download_pub_mlst -d db_mlst
 
 
+#############################################
+
+mkdir resources/string_mlst_db
+#stringMLST.py --getMLST --species show
+
+stringMLST.py --getMLST -P resources/string_mlst_db/Campylobacter_jejuni/Campylobacter_jejuni --species "Campylobacter jejuni"
+stringMLST.py --getMLST -P resources/string_mlst_db/Listeria_monocytogenes/Listeria_monocytogenes --species "Listeria monocytogenes"
+stringMLST.py --getMLST -P resources/string_mlst_db/Escherichia_coli_1/Escherichia_coli_1 --species "Escherichia coli#1"
+stringMLST.py --getMLST -P resources/string_mlst_db/Escherichia_coli_2/Escherichia_coli_2 --species "Escherichia coli#2"
+stringMLST.py --getMLST -P resources/string_mlst_db/Salmonella_enterica/Salmonella_enterica --species "Salmonella enterica"
+
+
+
 ###################################################################################
 # CheckM_databases 
 ###################################################################################
@@ -294,7 +307,7 @@ ariba pubmlstget "Escherichia coli#2" /software/resources/dgsp//ariba/Escherichi
 ariba pubmlstget "Listeria monocytogenes" /software/resources/dgsp/ariba/Listeria_monocytogenes/
 ariba pubmlstget "Salmonella enterica" /software/resources/dgsp/ariba/Salmonella_enterica/
 
-ariba pubmlstget "Campylobacter jejuni" /software/resources/ariba/Campylobacter_jejuni/
+ariba pubmlstget "Campylobacter jejuni" /software/resources/dgsp/ariba/Campylobacter_jejuni/
 
 
 docker run -it \
