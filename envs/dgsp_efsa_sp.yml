@@ -9,6 +9,7 @@ dependencies:
   - gsl=2.5
   - seqsero2=1.2.1
   - sistr_cmd=1.1.1
+  - stringmlst    0.6.3
   - staramr=0.10.0
   - bl=0.4.9
   - nextflow=20.10.0
