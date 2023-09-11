@@ -967,7 +967,11 @@ Antimicrobial(class),Gene_mut(resistance)"  > ${OUTPUT_PATH}/4_results/${DATE}_s
                                 #---------------------------------------------------------
                                 # 05.0 Declaramos variables que no recogemos en esta especie
                                 #---------------------------------------------------------
-                                # STANTI="-"
+                                ST_CGMLST="-"
+                                ST_H1="-"
+                                ST_H2="-"
+                                ST_O_antigen="-"
+                                SEROVAR="-"
 
                                 #---------------------------------------------------------
                                 # 05.1 Serotipado y patotipado
@@ -1019,52 +1023,6 @@ Antimicrobial(class),Gene_mut(resistance)"  > ${OUTPUT_PATH}/4_results/${DATE}_s
                                 #---------------------------------------------------------
                                 mkdir -p ${OUTPUT_PATH}/3_typing/MLST
 
-                                # stringMLST.py \
-                                # --predict \
-                                # -1 ${OUTPUT_PATH}/0_fastq/${sample}_1.fastq.gz \
-                                # -2 ${OUTPUT_PATH}/0_fastq/${sample}_2.fastq.gz \
-                                # -p \
-                                # --prefix ${RESOURCES}/string_mlst_db/Escherichia_coli_1/Escherichia_coli_1 \
-                                # -k 35 \
-                                # -o ${OUTPUT_PATH}/3_typing/MLST/${sample}_stringmlst_ecoli1.txt
-
-                                # stringMLST.py \
-                                # --predict \
-                                # -1 ${OUTPUT_PATH}/0_fastq/${sample}_1.fastq.gz \
-                                # -2 ${OUTPUT_PATH}/0_fastq/${sample}_2.fastq.gz \
-                                # -p \
-                                # --prefix ${RESOURCES}/string_mlst_db/Escherichia_coli_2/Escherichia_coli_2 \
-                                # -k 35 \
-                                # -o ${OUTPUT_PATH}/3_typing/MLST/${sample}_stringmlst_ecoli2.txt
-
-                                # mkdir -p ${OUTPUT_PATH}/3_typing/PLUS/sistr
-                                # sistr \
-                                # --qc \
-                                # -vv \
-                                # --alleles-output ${OUTPUT_PATH}/3_typing/PLUS/sistr/${sample}_allele-results.json \
-                                # --novel-alleles ${OUTPUT_PATH}/3_typing/PLUS/sistr/${sample}_novel-alleles.fasta \
-                                # --cgmlst-profiles ${OUTPUT_PATH}/3_typing/PLUS/sistr/${sample}_cgmlst-profiles.csv \
-                                # -f tab \
-                                # -o ${OUTPUT_PATH}/3_typing/PLUS/sistr/${sample}_sistr-output.tab \
-                                # ${OUTPUT_PATH}/2_assembly/${sample}.contigs.fa \
-                                # > ${OUTPUT_PATH}/log/sistr/${sample}.log 2>&1
-
-                                FILE_SISTR=${OUTPUT_PATH}/3_typing/PLUS/sistr/${sample}_sistr-output.tab
-
-                                if [[ -e $FILE_SISTR ]]; then
-                                    ST_CGMLST=$(awk -F'\t' '{print $1}' $FILE_SISTR | tail -1 | sed 's/,/;/g')
-                                    ST_H1=$(awk -F'\t' '{print $9}' $FILE_SISTR | tail -1 | sed 's/,/;/g')
-                                    ST_H2=$(awk -F'\t' '{print $10}' $FILE_SISTR | tail -1 | sed 's/,/;/g')
-                                    ST_O_antigen=$(awk -F'\t' '{print $11}' $FILE_SISTR | tail -1 | sed 's/,/;/g')
-                                    SEROVAR=$(awk -F'\t' '{print $15}' $FILE_SISTR | tail -1 | sed 's/,/;/g')
-                                else
-                                    ST_CGMLST="-"
-                                    ST_H1="-"
-                                    ST_H2="-"
-                                    ST_O_antigen="-"
-                                    SEROVAR="-"
-                                fi
-
                                 docker run --cpus ${THREADS} --rm -u "$(id -u)":"$(id -g)" -v ${OUTPUT_PATH}:${OUTPUT_PATH} staphb/mlst:2.23.0 \
                                 mlst \
                                 --threads ${THREADS} \
@@ -1087,20 +1045,6 @@ Antimicrobial(class),Gene_mut(resistance)"  > ${OUTPUT_PATH}/4_results/${DATE}_s
 
                                 # ABRICATE
                                 ##########
-                                # Para ver bases de datos disponibles
-                                #docker run --rm staphb/abricate:1.0.1-insaflu-220727 abricate --list
-                                # Nos devuelve:
-                                # DATABASE	SEQUENCES	DBTYPE	DATE
-                                # argannot	2223	nucl	2022-Nov-16
-                                # ncbi	5386	nucl	2022-Nov-16
-                                # plasmidfinder	460	nucl	2022-Nov-16
-                                # vfdb	2597	nucl	2022-Nov-16
-                                # ecoli_vf	2701	nucl	2022-Nov-16
-                                # card	2631	nucl	2022-Nov-16
-                                # megares	6635	nucl	2022-Nov-16
-                                # resfinder	3077	nucl	2022-Nov-16
-                                # ecoh	597	nucl	2022-Nov-16
-                                # insaflu	34	nucl	2022-Nov-16
                                 mkdir -p ${OUTPUT_PATH}/3_typing/VIRULENCE-PROFILE
 
                                 docker run --cpus ${THREADS} --rm -u "$(id -u)":"$(id -g)" -v ${OUTPUT_PATH}:${OUTPUT_PATH} staphb/abricate:1.0.1-insaflu-220727 \
@@ -1145,18 +1089,6 @@ Antimicrobial(class),Gene_mut(resistance)"  > ${OUTPUT_PATH}/4_results/${DATE}_s
                                 chewBBACA_SIZE_THRESHOLD=0.2
                                 BACT=Listeria_monocytogenes
 
-                                # Ya venimos con el esquema descargado y adaptado según las especificaciones de la EFSA
-                                # docker run --cpus ${THREADS} --rm -u "$(id -u)":"$(id -g)" -v ${OUTPUT_PATH}:${OUTPUT_PATH} ummidock/chewbbaca:3.1.2 \
-                                # chewBBACA.py CreateSchema \
-                                # --cpu ${THREADS} \
-                                # -i ${PATHMLST}"/"${BACT}"/ecoli_INNUENDO_wgMLST/" \
-                                # --bsr ${chewBBACA_BLAST_SCORE_RATIO} \
-                                # --l ${chewBBACA_MINIMUM_LENGTH} \
-                                # --t ${chewBBACA_TRANSLATION_TABLE} \
-                                # --st ${chewBBACA_SIZE_THRESHOLD} \
-                                # -o ${OUTPUT_PATH}"/typing/"${sample}"/ALLELE_CALLING/scheme" \
-                                # --ptf ${PATHMLST}"/"${BACT}"/ecoli_INNUENDO_wgMLST/"${BACT}".trn"
-
                                 # Allele Calling
                                 #################
                 
@@ -1182,14 +1114,8 @@ Antimicrobial(class),Gene_mut(resistance)"  > ${OUTPUT_PATH}/4_results/${DATE}_s
                                 chewBBACA.py RemoveGenes -i ${PATHALLELE}/results_alleles.tsv -g ${PATHALLELE}/paralogous_counts.tsv -o ${PATHALLELE}/results_alleles_NoParalogs.tsv \
                                 > ${OUTPUT_PATH}/log/chewbbaca/${sample}_2_removegenes.log 2>&1
 
-                                # Evaluate genome quality NOT AVAILABLE IN THIS chewBBACA VERSION!
-                                # docker run --cpus ${THREADS} --rm -u "$(id -u)":"$(id -g)" -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHcgMLST}:${PATHcgMLST} ummidock/chewbbaca:3.1.2 \
-                                # chewBBACA.py TestGenomeQuality -i ${PATHALLELE}/results_alleles_NoParalogs.tsv -n 13 -t 300 -s 5 -o ${PATHALLELE}/genome_quality
-
-
                                 # ExtractCgMLST - Determine the set of loci that constitute the core genome
                                 ###################
-            
                                 docker run --cpus ${THREADS} --rm -u "$(id -u)":"$(id -g)" -v ${OUTPUT_PATH}:${OUTPUT_PATH} ummidock/chewbbaca:3.1.2 \
                                 chewBBACA.py ExtractCgMLST -i ${PATHALLELE}/results_alleles.tsv -o ${PATHALLELE} \
                                 > ${OUTPUT_PATH}/log/chewbbaca/${sample}_3_extractgcmlst.log 2>&1
@@ -1200,6 +1126,15 @@ Antimicrobial(class),Gene_mut(resistance)"  > ${OUTPUT_PATH}/4_results/${DATE}_s
                     
 
                             elif [[ "$VAR_C2_SPE" = "Escherichia coli" ]]; then
+
+                                #---------------------------------------------------------
+                                # 05.0 Declaramos variables que no recogemos en esta especie
+                                #---------------------------------------------------------
+                                ST_CGMLST="-"
+                                ST_H1="-"
+                                ST_H2="-"
+                                ST_O_antigen="-"
+                                SEROVAR="-"
 
                                 #---------------------------------------------------------
                                 # 05.1 Serotipado y patotipado
@@ -1341,17 +1276,6 @@ Antimicrobial(class),Gene_mut(resistance)"  > ${OUTPUT_PATH}/4_results/${DATE}_s
                                 # -k 35 \
                                 # -o ${OUTPUT_PATH}/3_typing/MLST/${sample}_stringmlst_ecoli2.txt
 
-                                mkdir -p ${OUTPUT_PATH}/3_typing/PLUS/sistr
-                                sistr \
-                                --qc \
-                                -vv \
-                                --alleles-output ${OUTPUT_PATH}/3_typing/PLUS/sistr/${sample}_allele-results.json \
-                                --novel-alleles ${OUTPUT_PATH}/3_typing/PLUS/sistr/${sample}_novel-alleles.fasta \
-                                --cgmlst-profiles ${OUTPUT_PATH}/3_typing/PLUS/sistr/${sample}_cgmlst-profiles.csv \
-                                -f tab \
-                                -o ${OUTPUT_PATH}/3_typing/PLUS/sistr/${sample}_sistr-output.tab \
-                                ${OUTPUT_PATH}/2_assembly/${sample}.contigs.fa 
-
                                 docker run --cpus ${THREADS} --rm -u "$(id -u)":"$(id -g)" -v ${OUTPUT_PATH}:${OUTPUT_PATH} staphb/mlst:2.23.0 \
                                 mlst \
                                 --threads ${THREADS} \
@@ -1374,20 +1298,6 @@ Antimicrobial(class),Gene_mut(resistance)"  > ${OUTPUT_PATH}/4_results/${DATE}_s
 
                                 # ABRICATE
                                 ##########
-                                # Para ver bases de datos disponibles
-                                #docker run --rm staphb/abricate:1.0.1-insaflu-220727 abricate --list
-                                # Nos devuelve:
-                                # DATABASE	SEQUENCES	DBTYPE	DATE
-                                # argannot	2223	nucl	2022-Nov-16
-                                # ncbi	5386	nucl	2022-Nov-16
-                                # plasmidfinder	460	nucl	2022-Nov-16
-                                # vfdb	2597	nucl	2022-Nov-16
-                                # ecoli_vf	2701	nucl	2022-Nov-16
-                                # card	2631	nucl	2022-Nov-16
-                                # megares	6635	nucl	2022-Nov-16
-                                # resfinder	3077	nucl	2022-Nov-16
-                                # ecoh	597	nucl	2022-Nov-16
-                                # insaflu	34	nucl	2022-Nov-16
                                 mkdir -p ${OUTPUT_PATH}/3_typing/VIRULENCE-PROFILE
 
                                 docker run --cpus ${THREADS} --rm -u "$(id -u)":"$(id -g)" -v ${OUTPUT_PATH}:${OUTPUT_PATH} staphb/abricate:1.0.1-insaflu-220727 \
@@ -1430,7 +1340,6 @@ Antimicrobial(class),Gene_mut(resistance)"  > ${OUTPUT_PATH}/4_results/${DATE}_s
                                 #---------------------------------------------------------
                                 # 05.4  Allele calling
                                 #---------------------------------------------------------
-                                mkdir -p ${OUTPUT_PATH}"/typing/"${sample}"/ALLELE_CALLING"
                                 #PATHcgMLST=/ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources/cgMLST_data
 
                                 chewBBACA_BLAST_SCORE_RATIO=0.6
@@ -1439,83 +1348,41 @@ Antimicrobial(class),Gene_mut(resistance)"  > ${OUTPUT_PATH}/4_results/${DATE}_s
                                 chewBBACA_SIZE_THRESHOLD=0.2
                                 BACT=Escherichia_coli
 
-                                # Ya venimos con el esquema descargado y adaptado según las especificaciones de la EFSA
-                                # docker run --cpus ${THREADS} --rm -u "$(id -u)":"$(id -g)" -v ${OUTPUT_PATH}:${OUTPUT_PATH} ummidock/chewbbaca:3.1.2 \
-                                # chewBBACA.py CreateSchema \
-                                # --cpu ${THREADS} \
-                                # -i ${PATHcgMLST}"/"${BACT}"/ecoli_INNUENDO_wgMLST/" \
-                                # --bsr ${chewBBACA_BLAST_SCORE_RATIO} \
-                                # --l ${chewBBACA_MINIMUM_LENGTH} \
-                                # --t ${chewBBACA_TRANSLATION_TABLE} \
-                                # --st ${chewBBACA_SIZE_THRESHOLD} \
-                                # -o ${OUTPUT_PATH}"/typing/"${sample}"/ALLELE_CALLING/scheme" \
-                                # --ptf ${PATHcgMLST}"/"${BACT}"/ecoli_INNUENDO_wgMLST/"${BACT}".trn"
-
-                                # Allele Calling
-                                #################
-                                # The allele call step determines the allelic profiles of the analyzed strains, 
-                                # identifying known and novel alleles in the analyzed genomes. 
-                                # Novel alleles are assigned an allele identifier and added to the schema. 
                                 docker run --cpus ${THREADS} --rm -u "$(id -u)":"$(id -g)" -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHcgMLST}:${PATHcgMLST} ummidock/chewbbaca:3.1.2 \
                                 chewBBACA.py AlleleCall \
                                 --cpu ${THREADS} --force-continue \
-                                -i ${OUTPUT_PATH}/typing/${sample}/ \
+                                -i ${OUTPUT_PATH}/tmp/pipeline/${sample}/BACTpipe_results/shovill/ \
                                 --bsr ${chewBBACA_BLAST_SCORE_RATIO} \
                                 --l ${chewBBACA_MINIMUM_LENGTH} \
                                 --t ${chewBBACA_TRANSLATION_TABLE} \
                                 --st ${chewBBACA_SIZE_THRESHOLD} \
                                 -g ${PATHcgMLST}/schema/${BACT} \
                                 --ptf ${PATHcgMLST}/schema/${BACT}/${BACT}.trn \
-                                -o ${OUTPUT_PATH}/typing/${sample}/ALLELE_CALLING \
+                                -o ${OUTPUT_PATH}/3_typing/ALLELE_CALLING/${sample} \
                                 > ${OUTPUT_PATH}/log/chewbbaca/${sample}_1_allelecall.log 2>&1
 
                                 # Get PATH results
-                                PATHALLELE=${OUTPUT_PATH}/typing/${sample}/ALLELE_CALLING/$(ls ${OUTPUT_PATH}/typing/${sample}/ALLELE_CALLING)
+                                # PATHALLELE=${OUTPUT_PATH}/3_typing/ALLELE_CALLING/${sample}/$(ls ${OUTPUT_PATH}/3_typing/ALLELE_CALLING/${sample})
+                                PATHALLELE=${OUTPUT_PATH}/3_typing/ALLELE_CALLING/${sample}
                                 # Paralog detection
                                 ###################
-                                # The next step in the analysis is to determine if some of the loci can be considered paralogs 
-                                # based on the result of the wgMLST allele calling. The AlleleCall module returns a list of 
-                                # Paralogous genes in the paralogous_counts.tsv file that can be found on the results32_wgMLST folder. 
-                                # The paralogous_counts.tsv file contains a set of 10 loci that were identified as possible paralogs. 
-                                # These loci should be removed from the schema due to the potential uncertainty in allele assignment. 
-                                # To remove the set of 10 paralogous loci from the allele calling results, run the following command:
                                 docker run --cpus ${THREADS} --rm -u "$(id -u)":"$(id -g)" -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHcgMLST}:${PATHcgMLST} ummidock/chewbbaca:3.1.2 \
                                 chewBBACA.py RemoveGenes -i ${PATHALLELE}/results_alleles.tsv -g ${PATHALLELE}/paralogous_counts.tsv -o ${PATHALLELE}/results_alleles_NoParalogs.tsv \
                                 > ${OUTPUT_PATH}/log/chewbbaca/${sample}_2_removegenes.log 2>&1
 
-                                # Evaluate genome quality NOT AVAILABLE IN THIS chewBBACA VERSION!
-                                # docker run --cpus ${THREADS} --rm -u "$(id -u)":"$(id -g)" -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHcgMLST}:${PATHcgMLST} ummidock/chewbbaca:3.1.2 \
-                                # chewBBACA.py TestGenomeQuality -i ${PATHALLELE}/results_alleles_NoParalogs.tsv -n 13 -t 300 -s 5 -o ${PATHALLELE}/genome_quality
-
-
                                 # ExtractCgMLST - Determine the set of loci that constitute the core genome
                                 ###################
-                                # We can now determine the set of loci in the core genome based on the allele calling results. 
-                                # The set of loci in the core genome is determined based on a threshold of loci presence in the analysed genomes. 
-                                # We can run the ExtractCgMLST module to determine the set of loci in the core genome for the loci presence thresholds of 95%, 99% and 100%.
-                                ###
-                                # Requirements to define a core genome MLST (cgMLST) schema
-                                # cgMLST schemas are defined as the set of loci that are present in all strains under analysis or, due to 
-                                # sequencing/assembly limitations, >95% of strains analyzed. In order to have a robust definition of a cgMLST 
-                                # schema for a given bacterial species, a set of representative strains of the diversity of a given species 
-                                # should be selected. Furthermore, since cgMLST schema definition is based on pre-defined thresholds, only 
-                                # when a sufficient number of strains have been analyzed can the cgMLST schema be considered stable. 
-                                # This number will always depend on the population structure and diversity of the species in question, with 
-                                # non-recombinant monomorphic species possibly requiring a smaller number of strais to define cgMLST schemas 
-                                # than panmictic highly recombinogenic species that are prone to have large numbers of accessory genes and 
-                                # mobile genetic elements. It is also important to refer that the same strategy described here can be used 
-                                # to defined lineage specific schemas for more detailed analysis within a given bacterial lineage. Also, 
-                                # by definition, all the loci that are not considered core genome, can be classified as being part of an accessory genome MLST (agMLST) schema.
                                 docker run --cpus ${THREADS} --rm -u "$(id -u)":"$(id -g)" -v ${OUTPUT_PATH}:${OUTPUT_PATH} ummidock/chewbbaca:3.1.2 \
                                 chewBBACA.py ExtractCgMLST -i ${PATHALLELE}/results_alleles.tsv -o ${PATHALLELE} \
                                 > ${OUTPUT_PATH}/log/chewbbaca/${sample}_3_extractgcmlst.log 2>&1
 
+                                # rm -r ${OUTPUT_PATH}/3_typing/ALLELE_CALLING/tmp_${sample}
 
-                                echo -e "$sample,$fastq_1,$fastq_2,$VAR_C2_SPE,$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,\
-                                $BASESQ30,$COVQ30,$VALUEQ30,$CONTROL_1_Q30,$C2_SPE,$CONTROL_2_BACT,$C3_warning,$CONTROL_3_CONT,$VAR_C4_COMPLETENESS,$VAR_C4_CONTAMINATION,\
-                                $vcheckm,$CONTROL4_CHECKM,$vCONTROL4_CHECKM_quality,$STVAR,$STPATHO,$ST_CGMLST,$ST_H1,$ST_H2,$ST_O_antigen,$SEROVAR,$RESFINDER_GENES,$RESFINDER_RESISTANT,$RESFINDER_MUTS,$MLST" >> "${OUTPUT_PATH}/4_results/${DATE}_summary.csv"
-                            elif [[ "$VAR_C2_SPE" = "Yersinia enterocolitica" ]]; then
-                                p=2
+                                echo -e "$sample,$fastq_1,$fastq_2,$VAR_C2_SPE,$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,$CONTROL_1_Q30,$C2_SPE,$CONTROL_2_BACT,$C3_warning,$CONTROL_3_CONT,$VAR_C4_COMPLETENESS,$VAR_C4_CONTAMINATION,$vcheckm,$CONTROL4_CHECKM,$vCONTROL4_CHECKM_quality,$STVAR,$MLST,$STANTI,$STPATHO,$ST_CGMLST,$ST_H1,$ST_H2,$ST_O_antigen,$SEROVAR,$RESFINDER_GENES,$RESFINDER_RESISTANT,$RESFINDER_MUTS" >> "${OUTPUT_PATH}/4_results/${DATE}_summary.csv"
+                    
+                                
+                            # elif [[ "$VAR_C2_SPE" = "Yersinia enterocolitica" ]]; then
+                            #     p=2
                             elif [[ "$VAR_C2_SPE" = "Campylobacter jenuni" ]]; then
                                 #---------------------------------------------------------
                                 # 05.2 Detección de AMR
