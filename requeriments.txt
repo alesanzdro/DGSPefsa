@@ -279,6 +279,7 @@ docker run \
 -e MPLCONFIGDIR='/software/resources/ariba/tmp' \
 
 docker pull sangerpathogens/ariba:latest
+PATHARIBA="/software/resources/dgsp/ariba"
 
 docker run --rm -it -v ${PATHARIBA}:${PATHARIBA} \
 --env HTTP_PROXY="http://193.145.201.49:8080" \
@@ -287,11 +288,11 @@ docker run --rm -it -v ${PATHARIBA}:${PATHARIBA} \
 --env https_proxy="http://193.145.201.49:8080" \
 sangerpathogens/ariba /bin/bash
 
-ariba pubmlstget "Salmonella enterica" /software/resources/ariba/Salmonella_enterica/
-ariba pubmlstget "Escherichia coli#1" /software/resources/ariba/Escherichia_coli1/
-ariba pubmlstget "Escherichia coli#2" /software/resources/ariba/Escherichia_coli2/
-ariba pubmlstget "Listeria monocytogenes" /software/resources/ariba/Listeria_monocytogenes/
-ariba pubmlstget "Salmonella enterica" /software/resources/ariba/Salmonella_enterica/
+ariba pubmlstget "Salmonella enterica" /software/resources/dgsp/ariba/Salmonella_enterica/
+ariba pubmlstget "Escherichia coli#1" /software/resources/dgsp/ariba/Escherichia_coli1/
+ariba pubmlstget "Escherichia coli#2" /software/resources/dgsp//ariba/Escherichia_coli2/
+ariba pubmlstget "Listeria monocytogenes" /software/resources/dgsp/ariba/Listeria_monocytogenes/
+ariba pubmlstget "Salmonella enterica" /software/resources/dgsp/ariba/Salmonella_enterica/
 
 ariba pubmlstget "Campylobacter jejuni" /software/resources/ariba/Campylobacter_jejuni/
 
