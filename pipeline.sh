@@ -39,7 +39,8 @@
 #https://onestopdataanalysis.com/checkm-completeness-contamination/
 #==============================================================================
 # NECESARIO MODIFICAR O TENER CONSTRUIDO
-RUN="230712_PRUEBA"
+#RUN="230712_PRUEBA"
+RUN=$1
 SRUN=$(echo $RUN | awk -F "_" '{print $2}')
 #INPUT_PATH="/home/susana/DGSP/RAW"
 INPUT_PATH="/ALMEIDA/PROJECTS/BACTERIAS/DGSP/DGSPefsa/sample_data/RAW"
@@ -49,9 +50,11 @@ DATE=$(date +"%y%m%d")
 #OUTPUT_PATH="/home/susana/DGSP/analysis_efsa/"${RUN}
 OUTPUT_PATH="/ALMEIDA/PROJECTS/BACTERIAS/DGSP/DGSPefsa/sample_data/ANALYSIS/"${RUN}
 CONDAPATH="/software/miniconda3/envs"
+#RESOURCES="/software/resources"
 RESOURCES="/ALMEIDA/PROJECTS/BACTERIAS/DGSP/DGSPefsa/resources"
 THREADS=20
-# SPADESMEM=64
+#THREADS=12
+#SPADESMEM=64
 VAR_C1_LENGTH=301
 VAR_C4_COMPLETENESS=98
 VAR_C4_CONTAMINATION=2
@@ -65,6 +68,17 @@ PATHMASH=${RESOURCES}/mash/refseq.genomes.k21s1000.msh
 
 export PERL5LIB=/software/miniconda3/envs/dgsp_efsa_sp/lib/perl5/5.32
 export PATH=/software/resources/dgsp/signalp-5.0b/bin:$PATH
+export PATH="${CONDAPATH}/dgsp_efsa_contamination/INNUca:${CONDAPATH}/dgsp_efsa_contamination/ReMatCh/ReMatCh:$PATH"
+
+
+PATHARIBA=${RESOURCES}/ariba
+PATHcgMLST=${RESOURCES}/cgMLST_data
+PATHCONFINDR=${RESOURCES}/confindr_db
+PATHMASH=${RESOURCES}/mash/refseq.genomes.k21s1000.msh
+# PATHMLST=${RESOURCES}/pubmlst
+
+export PERL5LIB=/software/miniconda3/envs/dgsp_efsa_sp/lib/perl5/5.32
+export PATH=${RESOURCES}/signalp-5.0b/bin:$PATH
 export PATH="${CONDAPATH}/dgsp_efsa_contamination/INNUca:${CONDAPATH}/dgsp_efsa_contamination/ReMatCh/ReMatCh:$PATH"
 
 
