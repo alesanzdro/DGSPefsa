@@ -19,7 +19,10 @@ rm v2.7.0.zip
 ###################################################################################
 
 ##################################################################### dgsp_efsa_sp2
-mamba env create -f dgsp_efsa_sp2.yml
+mamba env create -p /software/miniconda3/envs/dgsp_efsa_sp -f envs/dgsp_efsa_sp.yml
+mamba env create -f envs/dgsp_efsa_sp.yml
+
+##checkm data setRoot /software/miniconda3/envs/dgsp_efsa_sp/checkm_data
 
 cd /software/miniconda3/envs/dgsp_efsa_sp/bin
 #wget https://github.com/nextflow-io/nextflow/releases/download/v0.26.0/nextflow
@@ -38,7 +41,7 @@ prokka --setupdb
 
 #conda create -c bioconda checkm-genome=1.0.18 -n dgsp_efsa_checkm
 
-
+/software/miniconda3/envs/
 mamba env create -p /software/miniconda3/envs/dgsp_efsa_sp3 -f /ALMEIDA/PROJECTS/BACTERIAS/DGSP/envs-DGSPefsa/dgsp_efsa_sp.yml 
 
 

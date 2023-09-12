@@ -1,6 +1,0 @@
-name: dgsp_efsa_sp_checkm_1.0.18
-channels:
-  - conda-forge
-  - bioconda
-dependencies:
-  - checkm-genome=1.0.18
