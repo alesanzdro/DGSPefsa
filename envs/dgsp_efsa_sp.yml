@@ -11,6 +11,7 @@ dependencies:
   - sistr_cmd=1.1.1
   - stringmlst=0.6.3
   - staramr=0.10.0
+  - confindr=0.7.4
   - nextflow=0.27.0
   - prokka=1.14.6
   - mlst=2.23.0
