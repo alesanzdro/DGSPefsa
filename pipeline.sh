@@ -39,22 +39,25 @@
 #https://onestopdataanalysis.com/checkm-completeness-contamination/
 #==============================================================================
 # NECESARIO MODIFICAR O TENER CONSTRUIDO
-#RUN="230712_PRUEBA"
+#RUN="230814_PRUEBA"
 RUN=$1
 SRUN=$(echo $RUN | awk -F "_" '{print $2}')
+
 #INPUT_PATH="/home/susana/DGSP/RAW"
+#OUTPUT_PATH="/home/susana/DGSP/analysis_efsa/"${RUN}
+#RESOURCES="/software/resources"
+#THREADS=12
+
 INPUT_PATH="/ALMEIDA/PROJECTS/BACTERIAS/DGSP/DGSPefsa/sample_data/RAW"
+OUTPUT_PATH="/ALMEIDA/PROJECTS/BACTERIAS/DGSP/DGSPefsa/sample_data/ANALYSIS/"${RUN}
+RESOURCES="/ALMEIDA/PROJECTS/BACTERIAS/DGSP/DGSPefsa/resources"
+THREADS=20
+CONDAPATH="/software/miniconda3/envs"
+
 SAMPLESHEET=${INPUT_PATH}/${RUN}/${SRUN}/samplesheet.csv
 IR=${INPUT_PATH}/${RUN}/${SRUN}
 DATE=$(date +"%y%m%d")
-#OUTPUT_PATH="/home/susana/DGSP/analysis_efsa/"${RUN}
-OUTPUT_PATH="/ALMEIDA/PROJECTS/BACTERIAS/DGSP/DGSPefsa/sample_data/ANALYSIS/"${RUN}
-CONDAPATH="/software/miniconda3/envs"
-#RESOURCES="/software/resources"
-RESOURCES="/ALMEIDA/PROJECTS/BACTERIAS/DGSP/DGSPefsa/resources"
-THREADS=20
-#THREADS=12
-#SPADESMEM=64
+
 VAR_C1_LENGTH=301
 VAR_C4_COMPLETENESS=98
 VAR_C4_CONTAMINATION=2
@@ -65,20 +68,8 @@ PATHCONFINDR=${RESOURCES}/confindr_db
 PATHMASH=${RESOURCES}/mash/refseq.genomes.k21s1000.msh
 # PATHMLST=${RESOURCES}/pubmlst
 
-
-export PERL5LIB=/software/miniconda3/envs/dgsp_efsa_sp/lib/perl5/5.32
-export PATH=/software/resources/dgsp/signalp-5.0b/bin:$PATH
-export PATH="${CONDAPATH}/dgsp_efsa_contamination/INNUca:${CONDAPATH}/dgsp_efsa_contamination/ReMatCh/ReMatCh:$PATH"
-
-
-PATHARIBA=${RESOURCES}/ariba
-PATHcgMLST=${RESOURCES}/cgMLST_data
-PATHCONFINDR=${RESOURCES}/confindr_db
-PATHMASH=${RESOURCES}/mash/refseq.genomes.k21s1000.msh
-# PATHMLST=${RESOURCES}/pubmlst
-
-export PERL5LIB=/software/miniconda3/envs/dgsp_efsa_sp/lib/perl5/5.32
 export PATH=${RESOURCES}/signalp-5.0b/bin:$PATH
+export PERL5LIB=/software/miniconda3/envs/dgsp_efsa_sp/lib/perl5/5.32
 export PATH="${CONDAPATH}/dgsp_efsa_contamination/INNUca:${CONDAPATH}/dgsp_efsa_contamination/ReMatCh/ReMatCh:$PATH"
 
 
@@ -166,18 +157,18 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
 
         # VARIABLES
 
-        sample="17_STEC_10960"
-        fastq_1="17_STEC_10960_S65_R1_001.fastq.gz"
-        fastq_2="17_STEC_10960_S65_R2_001.fastq.gz"
-        sample="22_LMON_07334"
-        fastq_1="22_LMON_07334_S49_R1_001.fastq.gz"
-        fastq_2="22_LMON_07334_S49_R2_001.fastq.gz"
-        sample="22_SALM_01804"
-        fastq_1="22_SALM_01804_S67_R1_001.fastq.gz"
-        fastq_2="22_SALM_01804_S67_R2_001.fastq.gz"
-        sample="23_CAMP_01451"
-        fastq_1="23_CAMP_01451_S43_R1_001.fastq.gz"
-        fastq_2="23_CAMP_01451_S43_R1_001.fastq.gz"
+        # sample="17_STEC_10960"
+        # fastq_1="17_STEC_10960_S65_R1_001.fastq.gz"
+        # fastq_2="17_STEC_10960_S65_R2_001.fastq.gz"
+        # sample="22_LMON_07334"
+        # fastq_1="22_LMON_07334_S49_R1_001.fastq.gz"
+        # fastq_2="22_LMON_07334_S49_R2_001.fastq.gz"
+        # sample="22_SALM_01804"
+        # fastq_1="22_SALM_01804_S67_R1_001.fastq.gz"
+        # fastq_2="22_SALM_01804_S67_R2_001.fastq.gz"
+        # sample="23_CAMP_01451"
+        # fastq_1="23_CAMP_01451_S43_R1_001.fastq.gz"
+        # fastq_2="23_CAMP_01451_S43_R1_001.fastq.gz"
         # 17_STEC_10960	17_STEC_10960_S65_R1_001.fastq.gz	17_STEC_10960_S65_R2_001.fastq.gz
         # 22_LMON_07334	22_LMON_07334_S49_R1_001.fastq.gz	22_LMON_07334_S49_R2_001.fastq.gz
         # 22_SALM_01804	22_SALM_01804_S67_R1_001.fastq.gz	22_SALM_01804_S67_R2_001.fastq.gz
@@ -225,7 +216,7 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
             VAR_C4
         elif [[ "$SPE" == "CAMP" ]]; then
             VAR_C1_GENOME=1700000
-            VAR_C2_SPE="Campylobacter jenuni"
+            VAR_C2_SPE="Campylobacter jejuni"
             VAR_C3_GENOME=$(echo "scale=3; $VAR_C1_GENOME/1000000" | bc -l)
             VAR_C3_SNV=3
             VAR_C4_GENOME_MIN=1.5
@@ -436,9 +427,9 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
                 if [[ "$SPE" == "CAMP" ]]; then
                     # Para que sólo coja los fastq de la muestra en concreto
                     #confindr.py -t $THREADS -i ${OUTPUT_PATH}/0_fastq/${sample}/fastq -o ConFindr --cgmlst ~/.confindr_db/Campylobacter_cgMLST.fasta >> ${OUTPUT_PATH}/log/confindr/${sample}.log 2>&1
-                    confindr.py -t $THREADS -i ${OUTPUT_PATH}/tmp/pipeline/${sample}/fastq -o ConFindr --cgmlst ${PATHCONFINDR}/Campylobacter_jejuni-coli.fasta >> ${OUTPUT_PATH}/log/confindr/${sample}.log 2>&1
+                    confindr.py -t $THREADS -i ${OUTPUT_PATH}/tmp/pipeline/${sample}/fastq -o ConFindr --cgmlst ${HOME}/.confindr_db/Campylobacter_jejuni-coli.fasta >> ${OUTPUT_PATH}/log/confindr/${sample}.log 2>&1
                 else
-                    confindr.py -t $THREADS -i ${OUTPUT_PATH}/tmp/pipeline/${sample}/fastq -d ${PATHCONFINDR} -o ConFindr >> ${OUTPUT_PATH}/log/confindr/${sample}.log 2>&1
+                    confindr.py -t $THREADS -i ${OUTPUT_PATH}/tmp/pipeline/${sample}/fastq -o ConFindr >> ${OUTPUT_PATH}/log/confindr/${sample}.log 2>&1
                 fi
 
                 conda deactivate
@@ -468,8 +459,8 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
                     echo "ConFindr show SNV contamination" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                     echo "========================================" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                 else
-                    repinnuca=$(ls ${OUTPUT_PATH}/tmp/pipeline/${sample}/INNUca/samples_report.*)
-                    C3_innuca=$(awk -F "\t" '{print $3}' $repinnuca | tail -n 1)
+                    repinnuca=$(ls -t ${OUTPUT_PATH}/tmp/pipeline/${sample}/INNUca/samples_report.* | head -n 1)
+                    C3_innuca=$(awk -F "\t" '{print $15}' $repinnuca | tail -n 1)
 
                     if [[ "$C3_confindr" = "False" ]] && { [[ "$C3_innuca" = "PASS" ]] || [[ "$C3_innuca" = "WARNING" ]]; }; then
 
@@ -532,7 +523,7 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
                         #>> ${OUTPUT_PATH}/log/checkm/${sample}_02_tree_qa.log 2>&1
 
                         #http://www.mselab.cn/detail/81/
-                        checkm data setRoot /software/resources/dgsp/checkm_data
+                        #checkm data setRoot /software/resources/checkm_data
                         # https://github.com/Ecogenomics/CheckM/issues/244
                         # https://github.com/Ecogenomics/CheckM/wiki/Workflows#using-custom-marker-genes
                     
@@ -555,16 +546,18 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
                         -f ${OUTPUT_PATH}/tmp/pipeline/${sample}/taxonomy/checkm_results \
                         domain Bacteria \
                         ${OUTPUT_PATH}/tmp/pipeline/${sample}/BACTpipe_results/shovill \
-                        ${OUTPUT_PATH}/tmp/pipeline/${sample}/taxonomy
+                        ${OUTPUT_PATH}/tmp/pipeline/${sample}/taxonomy \
+                        >> ${OUTPUT_PATH}/log/checkm/${sample}_02_taxonomy.log 2>&1
+
 
                         checkm tree_qa -o 2 --tab_table \
                         -f ${OUTPUT_PATH}/tmp/pipeline/${sample}/checkm/tree_qa.tsv \
                         ${OUTPUT_PATH}/tmp/pipeline/${sample}/checkm \
-                        >> ${OUTPUT_PATH}/log/checkm/${sample}_02_tree_qa.log 2>&1
+                        >> ${OUTPUT_PATH}/log/checkm/${sample}_03_tree_qa.log 2>&1
 
                         checkm tetra ${OUTPUT_PATH}/tmp/pipeline/${sample}/BACTpipe_results/shovill/${sample}.contigs.fa \
                         ${OUTPUT_PATH}/tmp/pipeline/${sample}/checkm/tetra_profile.tsv \
-                        >> ${OUTPUT_PATH}/log/checkm/${sample}_03_tetra_qa.log 2>&1
+                        >> ${OUTPUT_PATH}/log/checkm/${sample}_04_tetra_qa.log 2>&1
 
 
                         #https://136.159.60.117/metaerg/mockEvenCell/metaspades/metabat1500/SCG/
@@ -639,17 +632,17 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
                         checkm marker_plot ${OUTPUT_PATH}/tmp/pipeline/${sample}/checkm/ \
                         -x fa ${OUTPUT_PATH}/tmp/pipeline/${sample}/BACTpipe_results/shovill \
                         ${OUTPUT_PATH}/tmp/pipeline/${sample}/checkm/plots \
-                        >> ${OUTPUT_PATH}/log/checkm/${sample}_04_marker_plot.log 2>&1
+                        >> ${OUTPUT_PATH}/log/checkm/${sample}_05_marker_plot.log 2>&1
 
                         checkm len_hist \
                         -x fa ${OUTPUT_PATH}/tmp/pipeline/${sample}/BACTpipe_results/shovill \
                         ${OUTPUT_PATH}/tmp/pipeline/${sample}/checkm/plots \
-                        >> ${OUTPUT_PATH}/log/checkm/${sample}_05_len_hist.log 2>&1
+                        >> ${OUTPUT_PATH}/log/checkm/${sample}_06_len_hist.log 2>&1
 
                         checkm nx_plot \
                         -x fa ${OUTPUT_PATH}/tmp/pipeline/${sample}/BACTpipe_results/shovill \
                         ${OUTPUT_PATH}/tmp/pipeline/${sample}/checkm/plots \
-                        >> ${OUTPUT_PATH}/log/checkm/${sample}_06_nx_plot.log 2>&1
+                        >> ${OUTPUT_PATH}/log/checkm/${sample}_07_nx_plot.log 2>&1
 
                         checkm tetra_plot \
                         ${OUTPUT_PATH}/tmp/pipeline/${sample}/checkm/ \
@@ -657,7 +650,7 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
                         ${OUTPUT_PATH}/tmp/pipeline/${sample}/checkm/plots \
                         ${OUTPUT_PATH}/tmp/pipeline/${sample}/checkm/tetra_profile.tsv \
                         95 \
-                        >> ${OUTPUT_PATH}/log/checkm/${sample}_07_tetra_plot.log 2>&1
+                        >> ${OUTPUT_PATH}/log/checkm/${sample}_08_tetra_plot.log 2>&1
 
 
                         # ponemos resultados también en documento efsa
@@ -1534,6 +1527,9 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
                         echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                         printf '%s FAILED IN CONTAMINATION CHECK\n' "$sample" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                         echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                        # Si no se ejecuta checkm, tenemos que añadir los 12 campos vacios, para no tener problemas con el número de columnas finales
+                        vcheckm="-,-,-,-,-,-,-,-,-,-,-,-"
+                        echo -e "$sample,$fastq_1,$fastq_2,$VAR_C2_SPE,$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,$CONTROL_1_Q30,$C2_SPE,$CONTROL_2_BACT,$C3_warning,$CONTROL_3_CONT,$vcheckm,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-" >> "${OUTPUT_PATH}/4_results/${DATE}_summary.csv"
                         conda deactivate
                     fi
                 fi
@@ -1541,6 +1537,9 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
                 echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                 printf '%s FAILED IN SPECIES CHECK\n' "$sample" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                 echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                # Si no se ejecuta checkm, tenemos que añadir los 12 campos vacios, para no tener problemas con el número de columnas finales
+                vcheckm="-,-,-,-,-,-,-,-,-,-,-,-"
+                echo -e "$sample,$fastq_1,$fastq_2,$VAR_C2_SPE,$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,$CONTROL_1_Q30,$C2_SPE,$CONTROL_2_BACT,$vcheckm,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-" >> "${OUTPUT_PATH}/4_results/${DATE}_summary.csv"
                 conda deactivate
             fi
 
@@ -1548,6 +1547,9 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
             echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
             printf '%s FAILED IN Q30 CHECK\n' "$sample" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
             echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+            # Si no se ejecuta checkm, tenemos que añadir los 12 campos vacios, para no tener problemas con el número de columnas finales
+            vcheckm="-,-,-,-,-,-,-,-,-,-,-,-"
+            echo -e "$sample,$fastq_1,$fastq_2,$VAR_C2_SPE,$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,$CONTROL_1_Q30,$vcheckm,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-" >> "${OUTPUT_PATH}/4_results/${DATE}_summary.csv"
             conda deactivate
         fi
 

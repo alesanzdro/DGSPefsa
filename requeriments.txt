@@ -32,6 +32,9 @@ conda activate dgsp_efsa_sp
 cpanm XML::Simple
 prokka --setupdb
 
+confindr_database_setup
+
+# Y COPIAMOS Campylobacter_jejuni (aunque este es mlst)
 #Si hay problemas con las versiones y con otro Perl
 #% which -a perl
 #% perl -V | tail
