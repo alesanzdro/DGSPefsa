@@ -40,12 +40,18 @@
 #==============================================================================
 # NECESARIO MODIFICAR O TENER CONSTRUIDO
 #RUN="230814_PRUEBA"
+# RUN="230210_LSPV002"
+# sample="22_LM_07337_S37"
+# fastq_1="22_LM_07337_S37_R1_001.fastq.gz"
+# fastq_2="22_LM_07337_S37_R2_001.fastq.gz"
+
 RUN=$1
 SRUN=$(echo $RUN | awk -F "_" '{print $2}')
 
 INPUT_PATH="/home/susana/DGSP/RAW"
 OUTPUT_PATH="/home/susana/DGSP/analysis_efsa/"${RUN}
 RESOURCES="/software/resources"
+EFSA_PATH="/software/DGSPefsa"
 THREADS=14
 
 #INPUT_PATH="/ALMEIDA/PROJECTS/BACTERIAS/DGSP/DGSPefsa/sample_data/RAW"
@@ -632,6 +638,10 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
                         # Eliminar el último ','
                         vcheckm=${vcheckm%?}
 
+                        if [ -z "$vcheckm" ] || [ $(echo "$vcheckm" | tr -cd ',' | wc -c) -ne 12 ]; then
+                            echo "La variable vcheckm no está definida, está vacía o la cantidad de comas no es igual a 11."
+                            vcheckm="-,-,-,-,-,-,-,-,-,-,-,-,-"
+                        fi
 
                         if (($(echo "$C4_completeness < $VAR_C4_COMPLETENESS" | bc -l))) || (($(echo "$C4_contamination > $VAR_C4_CONTAMINATION" | bc -l))); then
                             CONTROL4_CHECKM="FAIL"
@@ -794,7 +804,7 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
 
                                 FILE_MLST=${OUTPUT_PATH}/3_typing/MLST/${sample}_mlst.out
                                 if [[ -f "$FILE_MLST" ]]; then
-                                    MLST=$(awk -F'\t' '{result=""; for(i=4; i<=NF; i++) result = result $i ";"; sub(/;$/, "", result); print result}' "$FILE_MLST")
+                                    MLST=$(awk -F'\t' '{result=""; for(i=4; i<=NF; i++) result = result $i ";"; sub(/;$/, "", result); gsub(/,/, "-", result); print result}' "$FILE_MLST")
                                     STVAR=$(awk '{if(NR==1) print $3}' "$FILE_MLST")
                                 else
                                     MLST="-"
@@ -892,8 +902,8 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
                                 > ${OUTPUT_PATH}/log/chewbbaca/${sample}_1_allelecall.log 2>&1
 
                                 # Get PATH results
-                                # PATHALLELE=${OUTPUT_PATH}/3_typing/ALLELE_CALLING/${sample}/$(ls ${OUTPUT_PATH}/3_typing/ALLELE_CALLING/${sample})
-                                PATHALLELE=${OUTPUT_PATH}/3_typing/ALLELE_CALLING/${sample}
+                                PATHALLELE=${OUTPUT_PATH}/3_typing/ALLELE_CALLING/${sample}/$(ls ${OUTPUT_PATH}/3_typing/ALLELE_CALLING/${sample})
+                                #PATHALLELE=${OUTPUT_PATH}/3_typing/ALLELE_CALLING/${sample}
                                 # Paralog detection
                                 ###################
                                 # The next step in the analysis is to determine if some of the loci can be considered paralogs
@@ -1015,7 +1025,7 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
 
                                 FILE_MLST=${OUTPUT_PATH}/3_typing/MLST/${sample}_mlst.out
                                 if [[ -f "$FILE_MLST" ]]; then
-                                    MLST=$(awk -F'\t' '{result=""; for(i=4; i<=NF; i++) result = result $i ";"; sub(/;$/, "", result); print result}' "$FILE_MLST")
+                                    MLST=$(awk -F'\t' '{result=""; for(i=4; i<=NF; i++) result = result $i ";"; sub(/;$/, "", result); gsub(/,/, "-", result); print result}' "$FILE_MLST")
                                     STVAR=$(awk '{if(NR==1) print $3}' "$FILE_MLST")
                                 else
                                     MLST="-"
@@ -1085,8 +1095,8 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
                                 > ${OUTPUT_PATH}/log/chewbbaca/${sample}_1_allelecall.log 2>&1
 
                                 # Get PATH results
-                                # PATHALLELE=${OUTPUT_PATH}/3_typing/ALLELE_CALLING/${sample}/$(ls ${OUTPUT_PATH}/3_typing/ALLELE_CALLING/${sample})
-                                PATHALLELE=${OUTPUT_PATH}/3_typing/ALLELE_CALLING/${sample}
+                                PATHALLELE=${OUTPUT_PATH}/3_typing/ALLELE_CALLING/${sample}/$(ls ${OUTPUT_PATH}/3_typing/ALLELE_CALLING/${sample})
+                                #PATHALLELE=${OUTPUT_PATH}/3_typing/ALLELE_CALLING/${sample}
                                 # Paralog detection
                                 ###################
                                 docker run --cpus ${THREADS} --rm -u "$(id -u)":"$(id -g)" -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHcgMLST}:${PATHcgMLST} ummidock/chewbbaca:3.1.2 \
@@ -1271,7 +1281,7 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
 
                                 FILE_MLST=${OUTPUT_PATH}/3_typing/MLST/${sample}_mlst.out
                                 if [[ -f "$FILE_MLST" ]]; then
-                                    MLST=$(awk -F'\t' '{result=""; for(i=4; i<=NF; i++) result = result $i ";"; sub(/;$/, "", result); print result}' "$FILE_MLST")
+                                    MLST=$(awk -F'\t' '{result=""; for(i=4; i<=NF; i++) result = result $i ";"; sub(/;$/, "", result); gsub(/,/, "-", result); print result}' "$FILE_MLST")
                                     STVAR=$(awk '{if(NR==1) print $3}' "$FILE_MLST")
                                 else
                                     MLST="-"
@@ -1281,7 +1291,7 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
                                 # ABRICATE
                                 ##########
                                 mkdir -p ${OUTPUT_PATH}/3_typing/VIRULENCE-PROFILE
-
+                                docker run --cpus ${THREADS} --rm -u "$(id -u)":"$(id -g)"
                                 docker run --cpus ${THREADS} --rm -u "$(id -u)":"$(id -g)" -v ${OUTPUT_PATH}:${OUTPUT_PATH} staphb/abricate:1.0.1-insaflu-220727 \
                                 abricate \
                                 --threads ${THREADS} \
@@ -1310,6 +1320,7 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
                                 ${OUTPUT_PATH}/0_fastq/${sample}_1.fastq.gz ${OUTPUT_PATH}/0_fastq/${sample}_2.fastq.gz \
                                 ${OUTPUT_PATH}/3_typing/PLUS/ariba/${sample}_ecoli1 \
 			                    > ${OUTPUT_PATH}/log/ariba/${sample}_ecoli1.log 2>&1
+
 
                                 docker run --cpus ${THREADS} --rm -u "$(id -u)":"$(id -g)" -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHARIBA}:${PATHARIBA} staphb/ariba:latest \
                                 ariba run \
@@ -1344,8 +1355,8 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
                                 > ${OUTPUT_PATH}/log/chewbbaca/${sample}_1_allelecall.log 2>&1
 
                                 # Get PATH results
-                                # PATHALLELE=${OUTPUT_PATH}/3_typing/ALLELE_CALLING/${sample}/$(ls ${OUTPUT_PATH}/3_typing/ALLELE_CALLING/${sample})
-                                PATHALLELE=${OUTPUT_PATH}/3_typing/ALLELE_CALLING/${sample}
+                                PATHALLELE=${OUTPUT_PATH}/3_typing/ALLELE_CALLING/${sample}/$(ls ${OUTPUT_PATH}/3_typing/ALLELE_CALLING/${sample})
+                                # PATHALLELE=${OUTPUT_PATH}/3_typing/ALLELE_CALLING/${sample}
                                 # Paralog detection
                                 ###################
                                 docker run --cpus ${THREADS} --rm -u "$(id -u)":"$(id -g)" -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHcgMLST}:${PATHcgMLST} ummidock/chewbbaca:3.1.2 \
@@ -1431,7 +1442,7 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
 
                                 FILE_MLST=${OUTPUT_PATH}/3_typing/MLST/${sample}_mlst.out
                                 if [[ -f "$FILE_MLST" ]]; then
-                                    MLST=$(awk -F'\t' '{result=""; for(i=4; i<=NF; i++) result = result $i ";"; sub(/;$/, "", result); print result}' "$FILE_MLST")
+                                    MLST=$(awk -F'\t' '{result=""; for(i=4; i<=NF; i++) result = result $i ";"; sub(/;$/, "", result); gsub(/,/, "-", result); print result}' "$FILE_MLST")
                                     STVAR=$(awk '{if(NR==1) print $3}' "$FILE_MLST")
                                 else
                                     MLST="-"
@@ -1484,7 +1495,8 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
                         printf '%s FAILED IN CONTAMINATION CHECK\n' "$sample" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                         echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                         # Si no se ejecuta checkm, tenemos que añadir los 12 campos vacios, para no tener problemas con el número de columnas finales
-                        vcheckm="-,-,-,-,-,-,-,-,-,-,-,-"
+                        CONTROL_3_CONT="FAIL"
+                        vcheckm="-,-,-,-,-,-,-,-,-,-,-,-,-"
                         echo -e "$sample,$fastq_1,$fastq_2,$VAR_C2_SPE,$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,$CONTROL_1_Q30,$C2_SPE,$CONTROL_2_BACT,$C3_warning,$CONTROL_3_CONT,$vcheckm,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
                         conda deactivate
                     fi
@@ -1494,7 +1506,8 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
                 printf '%s FAILED IN SPECIES CHECK\n' "$sample" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                 echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                 # Si no se ejecuta checkm, tenemos que añadir los 12 campos vacios, para no tener problemas con el número de columnas finales
-                vcheckm="-,-,-,-,-,-,-,-,-,-,-,-"
+                CONTROL_2_BACT="FAIL"
+                vcheckm="-,-,-,-,-,-,-,-,-,-,-,-,-"
                 echo -e "$sample,$fastq_1,$fastq_2,$VAR_C2_SPE,$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,$CONTROL_1_Q30,$C2_SPE,$CONTROL_2_BACT,$vcheckm,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
                 conda deactivate
             fi
@@ -1504,7 +1517,8 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
             printf '%s FAILED IN Q30 CHECK\n' "$sample" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
             echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
             # Si no se ejecuta checkm, tenemos que añadir los 12 campos vacios, para no tener problemas con el número de columnas finales
-            vcheckm="-,-,-,-,-,-,-,-,-,-,-,-"
+            CONTROL_1_Q30="FAIL"
+            vcheckm="-,-,-,-,-,-,-,-,-,-,-,-,-"
             echo -e "$sample,$fastq_1,$fastq_2,$VAR_C2_SPE,$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,$CONTROL_1_Q30,$vcheckm,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
             conda deactivate
         fi
@@ -1517,7 +1531,7 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
         for varr in "${var_reset[@]}"
         do
             if [[ $varr == "vcheckm" ]]; then
-                eval "$varr='-,-,-,-,-,-,-,-,-,-,-,-'"
+                eval "$varr='-,-,-,-,-,-,-,-,-,-,-,-,-'"
             else
                 eval "$varr='-'"
             fi
@@ -1529,3 +1543,23 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
 
 conda activate ${CONDAPATH}/dgsp_efsa_sp
 multiqc -o ${OUTPUT_PATH}/4_results/${DATE}_multiqc ${OUTPUT_PATH}
+conda deactivate
+
+# Reporte final
+FILE_SUMMARY=${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv
+
+if [[ -f "$FILE_SUMMARY" ]]; then
+    conda activate dgsp_efsa_report
+
+    Rscript $EFSA_PATH/scripts/summary_to_excel.R $FILE_SUMMARY
+
+    echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+    printf '%s DONE !\n' "$sample" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+    echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+else
+    echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+    printf '%s FAILED FINAL REPORT\n' "$sample" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+    echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+fi
+conda deactivate
+
