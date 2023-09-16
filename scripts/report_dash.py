@@ -12,6 +12,10 @@ from pandas.errors import ParserError
 
 # Crear una función para procesar la columna MLST
 def procesar_mlst(mlst):
+    # Si mlst es igual a "-", se deja sin cambios
+    if mlst == "-":
+        return mlst
+
     # Dividir la cadena por ";"
     genes = mlst.split(';')
     nuevos_genes = []
@@ -21,7 +25,7 @@ def procesar_mlst(mlst):
         # Dividir cada gen por "("
         partes = gen.split('(')
         gen_nombre = partes[0]
-        alelos = partes[1].rstrip(')').split(',')
+        alelos = partes[1].rstrip(')').split('-')
 
         # Filtrar alelos mayores de 25
         alelos = [alelo for alelo in alelos if int(alelo) <= 25]
@@ -34,6 +38,7 @@ def procesar_mlst(mlst):
     mlst_modificado = ';'.join(nuevos_genes)
 
     return mlst_modificado
+
 
 
 app = dash.Dash(__name__, suppress_callback_exceptions=True)
@@ -56,7 +61,7 @@ for filename in os.listdir(folder_path):
             # Leer el archivo CSV
             predf = pd.read_csv(os.path.join(folder_path, filename), sep=',', decimal='.')
             # Aplicar la función procesar_mlst a la columna MLST
-            print(predf)
+
             predf['MLST'] = predf['MLST'].apply(procesar_mlst)
 
             # Dividir el nombre del archivo para obtener 'Run' y 'Date_results'
@@ -219,12 +224,12 @@ app.layout = html.Div([
         dcc.Dropdown(
         id='sample-selection',
         options=[
-            {'label': 'LMON', 'value': 'LMON'},
+            {'label': 'LM', 'value': 'LM'},
             {'label': 'SALM', 'value': 'SALM'},
             {'label': 'STEC', 'value': 'STEC'},
             {'label': 'CAMP', 'value': 'CAMP'}
         ],
-        value='LMON',  # valor inicial
+        value='LM',  # valor inicial
         multi=False,  # permite seleccionar múltiples valores
         style={'width': '30%', 'float': 'left', 'margin-right': '10px'}
         ),
@@ -232,8 +237,6 @@ app.layout = html.Div([
         html.Br(),
         dcc.Graph(id='heatmap')
     ]),
-
-
 ], style={'backgroundColor': '#f0f0f0'})
 
 
@@ -311,8 +314,9 @@ def update_heatmap(selected_samples, table_data):
     # Convertir los datos de la tabla a DataFrame
     table_df = pd.DataFrame(table_data)
 
-    # Filtramos el DataFrame con las muestras seleccionadas (sin filtrar por "Completeness")
-    filtered_df = table_df[table_df['Sample'].str.contains(selected_samples, case=False, na=False)]
+    # Filtrar el DataFrame para seleccionar las muestras deseadas y eliminar aquellas con MLST="-"
+    filtered_df = table_df[table_df['Sample'].str.contains(selected_samples, case=False, na=False) & (table_df['MLST'] != "-")]
+
     unique_genes = set()
     max_alleles = {}
     for mlst_str in filtered_df['MLST']:
