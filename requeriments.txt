@@ -18,9 +18,11 @@ rm v2.7.0.zip
 # Creamos ambientes CONDA
 ###################################################################################
 
-##################################################################### dgsp_efsa_sp2
-mamba env create -p /software/miniconda3/envs/dgsp_efsa_sp -f envs/dgsp_efsa_sp.yml
-mamba env create -f envs/dgsp_efsa_sp.yml
+CONDAPATH="/software/miniconda3/envs"
+
+mamba env create -p ${CONDAPATH}/dgsp_efsa_sp -f envs/dgsp_efsa_sp.yml
+mamba env create -p ${CONDAPATH}/dgsp_efsa_report -f envs/dgsp_efsa_report.yml
+mamba env create -p ${CONDAPATH}/dgsp_efsa_dash -f envs/dgsp_efsa_dash.yml
 
 ##checkm data setRoot /software/miniconda3/envs/dgsp_efsa_sp/checkm_data
 
