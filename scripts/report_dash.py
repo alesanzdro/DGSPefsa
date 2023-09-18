@@ -10,6 +10,9 @@ from flask import send_file
 from pandas.errors import ParserError
 
 
+# conda activate dgsp_efsa_dash
+# cd /software/DGSPefsa/scripts
+# python report_dash.py
 # Crear una función para procesar la columna MLST
 def procesar_mlst(mlst):
     # Si mlst es igual a "-", se deja sin cambios
@@ -38,6 +41,19 @@ def procesar_mlst(mlst):
     mlst_modificado = ';'.join(nuevos_genes)
 
     return mlst_modificado
+
+
+
+# Primero, definimos la función que procesará cada valor en la columna 'Sample'
+def process_sample(sample):
+    if 'CNP' in sample:
+        parts = sample.split('_')
+        if len(parts) in [2, 3]:
+            return int('20' + parts[1][-2:])
+        else:
+            return None  # o cualquier valor predeterminado que desees usar
+    else:
+        return int('20' + sample.split('_')[0])
 
 
 
@@ -86,7 +102,9 @@ else:
     df = pd.DataFrame()  # En caso de que no se encuentren archivos
 
 # Extraemos los años de la columna 'Sample'
-df['Year'] = ('20' + df['Sample'].str.split('_').str[0]).astype(int)
+#df['Year'] = ('20' + df['Sample'].str.split('_').str[0]).astype(int)
+df['Year'] = df['Sample'].apply(process_sample)
+
 
 app.layout = html.Div([
     html.H1("RESULTADOS SECUENCIACIÓN DGSP", style={'text-align': 'center'}),
@@ -224,12 +242,12 @@ app.layout = html.Div([
         dcc.Dropdown(
         id='sample-selection',
         options=[
-            {'label': 'LM', 'value': 'LM'},
+            {'label': 'LMON', 'value': 'LMON'},
             {'label': 'SALM', 'value': 'SALM'},
             {'label': 'STEC', 'value': 'STEC'},
             {'label': 'CAMP', 'value': 'CAMP'}
         ],
-        value='LM',  # valor inicial
+        value='LMON',  # valor inicial
         multi=False,  # permite seleccionar múltiples valores
         style={'width': '30%', 'float': 'left', 'margin-right': '10px'}
         ),
