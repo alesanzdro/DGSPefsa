@@ -39,7 +39,7 @@
 #https://onestopdataanalysis.com/checkm-completeness-contamination/
 #==============================================================================
 # NECESARIO MODIFICAR O TENER CONSTRUIDO
-#RUN="230814_PRUEBA"
+#RUN="230331_LSPV005"
 RUN=$1
 SRUN=$(echo $RUN | awk -F "_" '{print $2}')
 
@@ -59,6 +59,7 @@ CONDAPATH="/software/miniconda3/envs"
 SAMPLESHEET=${INPUT_PATH}/${RUN}/${SRUN}/samplesheet.csv
 IR=${INPUT_PATH}/${RUN}/${SRUN}
 DATE=$(date +"%y%m%d")
+#DATE="230919"
 
 VAR_C1_LENGTH=301
 VAR_C4_COMPLETENESS=98
@@ -121,14 +122,21 @@ elif [[ ! -d ${OUTPUT_PATH} ]]; then
     echo "${OUTPUT_PATH} already exists but is not a directory" 1>&2
 fi
 
-echo -e "Sample,Fq1,Fq2,Expected_sp,Genome_size,Min_genome_size,Max_genome_size,Max_SNV,\
-Max_Contigs,Read_size,Bases_Q30,Cov_Q30,Rate_Q30,Status_Q30,Sp_detected,Status_SP,SNV_detected,\
-Status_SNV,Expected_completeness,Expected_contamination,Marker_lineage,Completeness,Contamination,\
-Strain_heterogeneity,Taxonomy_(contained),Genome_size_(Mbp),Gene_count,out_genome_size_(Mbp)_mean,\
-out_genome_size_(Mbp)_std,out_gene_count_mean,out_gene_count_std,contigs,N50_(contigs),\
-Status_Contamination,Assembly_quality,ST,MLST,Antigenic_profile,ST_patho,cgmlst_ST,h1,h2,o_antigen,serovar,Resistance_genes,\
-Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
+#echo -e "Sample,Fq1,Fq2,Expected_sp,Genome_size,Min_genome_size,Max_genome_size,Max_SNV,\
+#Max_Contigs,Read_size,Bases_Q30,Cov_Q30,Rate_Q30,Status_Q30,Sp_detected,Status_SP,SNV_detected,\
+#Status_SNV,Expected_completeness,Expected_contamination,Marker_lineage,Completeness,Contamination,\
+#Strain_heterogeneity,Taxonomy_(contained),Genome_size_(Mbp),Gene_count,out_genome_size_(Mbp)_mean,\
+#out_genome_size_(Mbp)_std,out_gene_count_mean,out_gene_count_std,contigs,N50_(contigs),\
+#Status_Contamination,Assembly_quality,ST,MLST,Antigenic_profile,ST_patho,cgmlst_ST,h1,h2,o_antigen,serovar,Resistance_genes,\
+#Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
 
+echo -e "\"Sample\",\"Fq1\",\"Fq2\",\"Expected_sp\",\"Genome_size\",\"Min_genome_size\",\"Max_genome_size\",\"Max_SNV\",\
+\"Max_Contigs\",\"Read_size\",\"Bases_Q30\",\"Cov_Q30\",\"Rate_Q30\",\"Status_Q30\",\"Sp_detected\",\"Status_SP\",\"SNV_detected\",\
+\"Status_SNV\",\"Expected_completeness\",\"Expected_contamination\",\"Marker_lineage\",\"Completeness\",\"Contamination\",\
+\"Strain_heterogeneity\",\"Taxonomy_(contained)\",\"Genome_size_(Mbp)\",\"Gene_count\",\"out_genome_size_(Mbp)_mean\",\
+\"out_genome_size_(Mbp)_std\",\"out_gene_count_mean\",\"out_gene_count_std\",\"contigs\",\"N50_(contigs)\",\
+\"Status_Contamination\",\"Assembly_quality\",\"ST\",\"MLST\",\"Antigenic_profile\",\"ST_patho\",\"cgmlst_ST\",\"h1\",\"h2\",\"o_antigen\",\"serovar\",\"Resistance_genes\",\
+\"Antimicrobial(class)\",\"Gene_mut(resistance)\"" > "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
 
 ##########################################################
 #
@@ -154,6 +162,18 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
         # sample="23_CAMP_01451"
         # fastq_1="23_CAMP_01451_S43_R1_001.fastq.gz"
         # fastq_2="23_CAMP_01451_S43_R1_001.fastq.gz"
+        
+        #sample="22_SALM_10116"
+        #fastq_1="22_SALM_10116_S76_R1_001.fastq.gz"
+        #fastq_2="22_SALM_10116_S76_R2_001.fastq.gz"
+        
+        #sample="22_SALM_10116"
+        #fastq_1="22_SALM_10116_S76_R1_001.fastq.gz"
+        #fastq_2="22_SALM_10116_S76_R2_001.fastq.gz"
+
+        #22_SALM_15935	22_SALM_15935_S17_R1_001.fastq.gz	22_SALM_15935_S17_R2_001.fastq.gz
+
+
 
         SPE=$(echo $fastq_1 | awk -F "_" '{print $2}')
 
@@ -169,7 +189,8 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
             VAR_C1_GENOME=2880000
             VAR_C2_SPE="Listeria monocytogenes"
             VAR_C3_GENOME=$(echo "scale=3; $VAR_C1_GENOME/1000000" | bc -l)
-            VAR_C3_SNV=3
+            # Modificamos de 3 a 10, para hacer más laxo el filtro
+	    VAR_C3_SNV=10
             VAR_C4_GENOME_MIN=2.7
             VAR_C4_GENOME_MAX=3.2
             VAR_C4_CONTIGS=200
@@ -245,7 +266,7 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
         COVQ30=$(echo 2k $BASESQ30 $VAR_C1_GENOME /p | dc)
         VALUEQ30=$(grep "Q30" ${OUTPUT_PATH}/log/fastp/${sample}.log | tail -n 2 | awk -F " " '{print $3}' | awk -F "(" '{print $2}' | sed 's/%//g' | awk '{total += $1; count += 1}END{ printf "%4.3f\n",  total / count}')
         if ((VAR_C1_LENGTH == 301)); then
-            if (($(echo "$COVQ30 < 30" | bc -l))) || (($(echo "$VALUEQ30 < 70" | bc -l))); then
+            if (($(echo "$COVQ30 < 25" | bc -l))) || (($(echo "$VALUEQ30 < 70" | bc -l))); then
                 CONTROL_1_Q30="FAIL"
             else
                 CONTROL_1_Q30="PASS"
@@ -310,9 +331,30 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
             echo "************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
             printf 'SPE_LOOK: %s\n' "$VAR_C2_SPE" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
 
+            
+            # Intento 1
             nextflow-20.10.0-all run ${RESOURCES}/BACTpipe-2.7.0/bactpipe.nf \
             --mashscreen_database ${PATHMASH} \
-            --reads './fastq/*_{1,2}.fastq.gz' >> ${OUTPUT_PATH}/log/BACTpipe/${sample}.log 2>&1 
+            --reads './fastq/*_{1,2}.fastq.gz' >> ${OUTPUT_PATH}/log/BACTpipe/${sample}.log 2>&1
+
+            # Verificar si el directorio existe después del intento 1
+            if [ ! -d ${OUTPUT_PATH}/tmp/pipeline/${sample}/BACTpipe_results/shovill/ ]; then
+            	sleep 5
+                # Intento 2
+                nextflow-20.10.0-all run ${RESOURCES}/BACTpipe-2.7.0/bactpipe.nf \
+                --mashscreen_database ${PATHMASH} \
+                --reads './fastq/*_{1,2}.fastq.gz' >> ${OUTPUT_PATH}/log/BACTpipe/${sample}.log 2>&1
+                
+                # Verificar si el directorio existe después del intento 2
+                if [ ! -d ${OUTPUT_PATH}/tmp/pipeline/${sample}/BACTpipe_results/shovill/ ]; then
+                    # Intento 2
+                    sleep 10
+                    nextflow-20.10.0-all run ${RESOURCES}/BACTpipe-2.7.0/bactpipe.nf \
+                    --mashscreen_database ${PATHMASH} \
+                    --reads './fastq/*_{1,2}.fastq.gz' >> ${OUTPUT_PATH}/log/BACTpipe/${sample}.log 2>&1
+
+                fi
+            fi
 
             if [ $? -eq 0 ]; then
                 cat ${OUTPUT_PATH}/tmp/pipeline/${sample}/BACTpipe_results/mash_screen/all_samples.mash_screening_results.tsv >> ${OUTPUT_PATH}/log/efsa/${sample}.log
@@ -350,6 +392,8 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
                 CONTROL_2_BACT="PASS"
                 printf 'STATUS: %s\n' "$CONTROL_2_BACT" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
 
+                #23_SALM_04474	23_SALM_04474_S70_R1_001.fastq.gz	23_SALM_04474_S70_R2_001.fastq.gz
+                #FILE_SEQSERO=/home/susana/DGSP/analysis_efsa/230519_LSPV008/3_typing/PLUS/23_SALM_04474.seqsero2.txt
                 # CHECK SEROVARES !!!!!
                 if [[ "$VAR_C2_SPE" = "Salmonella enterica" ]]; then
                     mkdir -p ${OUTPUT_PATH}/3_typing/PLUS
@@ -358,7 +402,7 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
                     FILE_SEQSERO=${OUTPUT_PATH}/3_typing/PLUS/${sample}.seqsero2.txt
                     if [ -f "$FILE_SEQSERO" ]; then
                         STANTI=$(grep 'Predicted antigenic profile:' $FILE_SEQSERO | awk -F"\t" '{print $2}' | sed 's/,/;/g' | tr -d '[:space:]')
-                        STPATHO=$(grep 'Predicted serotype:' $FILE_SEQSERO | awk -F: '{print $2}' | tr -d '[:space:]')
+                        STPATHO=$(grep 'Predicted serotype:' $FILE_SEQSERO | awk -F: '{print $2}' | sed 's/,/;/g' | tr -d '[:space:]')
                     else
                         STANTI="-"
                         STPATHO="-"
@@ -651,10 +695,12 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
                         C4_contamination=$(grep "Contamination" ${OUTPUT_PATH}/tmp/pipeline/${sample}/checkm/${sample}_checkm.tsv | awk '{print $2}')
 
                         # Extraer la segunda columna y unirla con ';'
-                        vcheckm=$(awk '{print $2}' ${OUTPUT_PATH}/tmp/pipeline/${sample}/checkm/${sample}_checkm.tsv | tr '\n' ',')
+                        #vcheckm=$(awk '{print $2}' ${OUTPUT_PATH}/tmp/pipeline/${sample}/checkm/${sample}_checkm.tsv | tr '\n' ',')
+                        vcheckm=$(awk '{print $2}' ${OUTPUT_PATH}/tmp/pipeline/${sample}/checkm/${sample}_checkm.tsv | tr '\n' ',' | awk -F "," '{print "\""$1"\"",$2,$3,$4,"\"" $5 "\"",$6,$7,$8,$9,$10,$11,$12,$13}' | tr '\ ' ',')
+
 
                         # Eliminar el último ','
-                        vcheckm=${vcheckm%?}
+                        #vcheckm=${vcheckm%?}
 
 
                         if (($(echo "$C4_completeness < $VAR_C4_COMPLETENESS" | bc -l))) || (($(echo "$C4_contamination > $VAR_C4_CONTAMINATION" | bc -l))); then
@@ -959,7 +1005,8 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
 
                                 # rm -r ${OUTPUT_PATH}/3_typing/ALLELE_CALLING/tmp_${sample}
 
-                                echo -e "$sample,$fastq_1,$fastq_2,$VAR_C2_SPE,$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,$CONTROL_1_Q30,$C2_SPE,$CONTROL_2_BACT,$C3_warning,$CONTROL_3_CONT,$VAR_C4_COMPLETENESS,$VAR_C4_CONTAMINATION,$vcheckm,$CONTROL4_CHECKM,$vCONTROL4_CHECKM_quality,$STVAR,$MLST,$STANTI,$STPATHO,$ST_CGMLST,$ST_H1,$ST_H2,$ST_O_antigen,$SEROVAR,$RESFINDER_GENES,$RESFINDER_RESISTANT,$RESFINDER_MUTS" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
+                                #echo -e "$sample,$fastq_1,$fastq_2,$VAR_C2_SPE,$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,$CONTROL_1_Q30,$C2_SPE,$CONTROL_2_BACT,$C3_warning,$CONTROL_3_CONT,$VAR_C4_COMPLETENESS,$VAR_C4_CONTAMINATION,$vcheckm,$CONTROL4_CHECKM,$vCONTROL4_CHECKM_quality,$STVAR,$MLST,$STANTI,$STPATHO,$ST_CGMLST,$ST_H1,$ST_H2,$ST_O_antigen,$SEROVAR,$RESFINDER_GENES,$RESFINDER_RESISTANT,$RESFINDER_MUTS" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
+				echo -e "\"$sample\",\"$fastq_1\",\"$fastq_2\",\"$VAR_C2_SPE\",$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,\"$CONTROL_1_Q30\",\"$C2_SPE\",\"$CONTROL_2_BACT\",$C3_warning,\"$CONTROL_3_CONT\",$VAR_C4_COMPLETENESS,$VAR_C4_CONTAMINATION,$vcheckm,\"$CONTROL4_CHECKM\",\"$vCONTROL4_CHECKM_quality\",\"$STVAR\",\"$MLST\",\"$STANTI\",\"$STPATHO\",\"$ST_CGMLST\",\"$ST_H1\",\"$ST_H2\",\"$ST_O_antigen\",\"$SEROVAR\",\"$RESFINDER_GENES\",\"$RESFINDER_RESISTANT\",\"$RESFINDER_MUTS\"" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
 
 
                             elif [[ "$VAR_C2_SPE" = "Listeria monocytogenes" ]]; then
@@ -1125,8 +1172,8 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
 
                                 # rm -r ${OUTPUT_PATH}/3_typing/ALLELE_CALLING/tmp_${sample}
 
-                                echo -e "$sample,$fastq_1,$fastq_2,$VAR_C2_SPE,$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,$CONTROL_1_Q30,$C2_SPE,$CONTROL_2_BACT,$C3_warning,$CONTROL_3_CONT,$VAR_C4_COMPLETENESS,$VAR_C4_CONTAMINATION,$vcheckm,$CONTROL4_CHECKM,$vCONTROL4_CHECKM_quality,$STVAR,$MLST,$STANTI,$STPATHO,$ST_CGMLST,$ST_H1,$ST_H2,$ST_O_antigen,$SEROVAR,$RESFINDER_GENES,$RESFINDER_RESISTANT,$RESFINDER_MUTS" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
-
+                                #echo -e "$sample,$fastq_1,$fastq_2,$VAR_C2_SPE,$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,$CONTROL_1_Q30,$C2_SPE,$CONTROL_2_BACT,$C3_warning,$CONTROL_3_CONT,$VAR_C4_COMPLETENESS,$VAR_C4_CONTAMINATION,$vcheckm,$CONTROL4_CHECKM,$vCONTROL4_CHECKM_quality,$STVAR,$MLST,$STANTI,$STPATHO,$ST_CGMLST,$ST_H1,$ST_H2,$ST_O_antigen,$SEROVAR,$RESFINDER_GENES,$RESFINDER_RESISTANT,$RESFINDER_MUTS" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
+				echo -e "\"$sample\",\"$fastq_1\",\"$fastq_2\",\"$VAR_C2_SPE\",$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,\"$CONTROL_1_Q30\",\"$C2_SPE\",\"$CONTROL_2_BACT\",$C3_warning,\"$CONTROL_3_CONT\",$VAR_C4_COMPLETENESS,$VAR_C4_CONTAMINATION,$vcheckm,\"$CONTROL4_CHECKM\",\"$vCONTROL4_CHECKM_quality\",\"$STVAR\",\"$MLST\",\"$STANTI\",\"$STPATHO\",\"$ST_CGMLST\",\"$ST_H1\",\"$ST_H2\",\"$ST_O_antigen\",\"$SEROVAR\",\"$RESFINDER_GENES\",\"$RESFINDER_RESISTANT\",\"$RESFINDER_MUTS\"" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
 
                             elif [[ "$VAR_C2_SPE" = "Escherichia coli" ]]; then
 
@@ -1385,7 +1432,8 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
 
                                 # rm -r ${OUTPUT_PATH}/3_typing/ALLELE_CALLING/tmp_${sample}
 
-                                echo -e "$sample,$fastq_1,$fastq_2,$VAR_C2_SPE,$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,$CONTROL_1_Q30,$C2_SPE,$CONTROL_2_BACT,$C3_warning,$CONTROL_3_CONT,$VAR_C4_COMPLETENESS,$VAR_C4_CONTAMINATION,$vcheckm,$CONTROL4_CHECKM,$vCONTROL4_CHECKM_quality,$STVAR,$MLST,$STANTI,$STPATHO,$ST_CGMLST,$ST_H1,$ST_H2,$ST_O_antigen,$SEROVAR,$RESFINDER_GENES,$RESFINDER_RESISTANT,$RESFINDER_MUTS" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
+                                #echo -e "$sample,$fastq_1,$fastq_2,$VAR_C2_SPE,$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,$CONTROL_1_Q30,$C2_SPE,$CONTROL_2_BACT,$C3_warning,$CONTROL_3_CONT,$VAR_C4_COMPLETENESS,$VAR_C4_CONTAMINATION,$vcheckm,$CONTROL4_CHECKM,$vCONTROL4_CHECKM_quality,$STVAR,$MLST,$STANTI,$STPATHO,$ST_CGMLST,$ST_H1,$ST_H2,$ST_O_antigen,$SEROVAR,$RESFINDER_GENES,$RESFINDER_RESISTANT,$RESFINDER_MUTS" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
+                                echo -e "\"$sample\",\"$fastq_1\",\"$fastq_2\",\"$VAR_C2_SPE\",$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,\"$CONTROL_1_Q30\",\"$C2_SPE\",\"$CONTROL_2_BACT\",$C3_warning,\"$CONTROL_3_CONT\",$VAR_C4_COMPLETENESS,$VAR_C4_CONTAMINATION,$vcheckm,\"$CONTROL4_CHECKM\",\"$vCONTROL4_CHECKM_quality\",\"$STVAR\",\"$MLST\",\"$STANTI\",\"$STPATHO\",\"$ST_CGMLST\",\"$ST_H1\",\"$ST_H2\",\"$ST_O_antigen\",\"$SEROVAR\",\"$RESFINDER_GENES\",\"$RESFINDER_RESISTANT\",\"$RESFINDER_MUTS\"" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
 
                             elif [[ "$VAR_C2_SPE" = "Campylobacter jenuni" ]]; then
 
@@ -1500,7 +1548,8 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
                                 ${OUTPUT_PATH}/3_typing/ariba/${sample} \
 			                    > ${OUTPUT_PATH}/log/ariba/${sample}.log 2>&1
 
-                                echo -e "$sample,$fastq_1,$fastq_2,$VAR_C2_SPE,$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,$CONTROL_1_Q30,$C2_SPE,$CONTROL_2_BACT,$C3_warning,$CONTROL_3_CONT,$VAR_C4_COMPLETENESS,$VAR_C4_CONTAMINATION,$vcheckm,$CONTROL4_CHECKM,$vCONTROL4_CHECKM_quality,$STVAR,$MLST,$STANTI,$STPATHO,$ST_CGMLST,$ST_H1,$ST_H2,$ST_O_antigen,$SEROVAR,$RESFINDER_GENES,$RESFINDER_RESISTANT,$RESFINDER_MUTS" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
+                                #echo -e "$sample,$fastq_1,$fastq_2,$VAR_C2_SPE,$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,$CONTROL_1_Q30,$C2_SPE,$CONTROL_2_BACT,$C3_warning,$CONTROL_3_CONT,$VAR_C4_COMPLETENESS,$VAR_C4_CONTAMINATION,$vcheckm,$CONTROL4_CHECKM,$vCONTROL4_CHECKM_quality,$STVAR,$MLST,$STANTI,$STPATHO,$ST_CGMLST,$ST_H1,$ST_H2,$ST_O_antigen,$SEROVAR,$RESFINDER_GENES,$RESFINDER_RESISTANT,$RESFINDER_MUTS" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
+                                echo -e "\"$sample\",\"$fastq_1\",\"$fastq_2\",\"$VAR_C2_SPE\",$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,\"$CONTROL_1_Q30\",\"$C2_SPE\",\"$CONTROL_2_BACT\",$C3_warning,\"$CONTROL_3_CONT\",$VAR_C4_COMPLETENESS,$VAR_C4_CONTAMINATION,$vcheckm,\"$CONTROL4_CHECKM\",\"$vCONTROL4_CHECKM_quality\",\"$STVAR\",\"$MLST\",\"$STANTI\",\"$STPATHO\",\"$ST_CGMLST\",\"$ST_H1\",\"$ST_H2\",\"$ST_O_antigen\",\"$SEROVAR\",\"$RESFINDER_GENES\",\"$RESFINDER_RESISTANT\",\"$RESFINDER_MUTS\"" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
                             fi
 
                         fi
@@ -1510,9 +1559,11 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
                         echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                         # Si no se ejecuta checkm, tenemos que añadir los 12 campos vacios, para no tener problemas con el número de columnas finales
 			CONTROL_3_CONT="FAIL"
-			vcheckm="-,-,-,-,-,-,-,-,-,-,-,-"
-                        echo -e "$sample,$fastq_1,$fastq_2,$VAR_C2_SPE,$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,$CONTROL_1_Q30,$C2_SPE,$CONTROL_2_BACT,$C3_warning,$CONTROL_3_CONT,$vcheckm,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
+			vcheckm="\"-\",-,-,-,\"-\",-,-,-,-,-,-,-,-"
+			echo -e "\"$sample\",\"$fastq_1\",\"$fastq_2\",\"$VAR_C2_SPE\",$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,\"$CONTROL_1_Q30\",\"$C2_SPE\",\"$CONTROL_2_BACT\",$C3_warning,\"$CONTROL_3_CONT\",$VAR_C4_COMPLETENESS,$VAR_C4_CONTAMINATION,$vcheckm,\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\"" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
+			
                         conda deactivate
+                        
                     fi
                 fi
             else
@@ -1521,8 +1572,8 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
                 echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                 # Si no se ejecuta checkm, tenemos que añadir los 12 campos vacios, para no tener problemas con el número de columnas finales
                 CONTROL_2_BACT="FAIL"
-		vcheckm="-,-,-,-,-,-,-,-,-,-,-,-"
-                echo -e "$sample,$fastq_1,$fastq_2,$VAR_C2_SPE,$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,$CONTROL_1_Q30,$C2_SPE,$CONTROL_2_BACT,$vcheckm,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
+		vcheckm="\"-\",-,-,-,\"-\",-,-,-,-,-,-,-,-"
+                echo -e "\"$sample\",\"$fastq_1\",\"$fastq_2\",\"$VAR_C2_SPE\",$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,\"$CONTROL_1_Q30\",\"$C2_SPE\",\"$CONTROL_2_BACT\",-,\"-\",-,-,$vcheckm,\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\"" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
                 conda deactivate
             fi
 
@@ -1532,8 +1583,9 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
             echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
             # Si no se ejecuta checkm, tenemos que añadir los 12 campos vacios, para no tener problemas con el número de columnas finales
             CONTROL_1_Q30="FAIL"
-	    vcheckm="-,-,-,-,-,-,-,-,-,-,-,-"
-            echo -e "$sample,$fastq_1,$fastq_2,$VAR_C2_SPE,$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,$CONTROL_1_Q30,$vcheckm,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
+	    vcheckm="\"-\",-,-,-,\"-\",-,-,-,-,-,-,-,-"
+            echo -e "\"$sample\",\"$fastq_1\",\"$fastq_2\",\"$VAR_C2_SPE\",$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,\"$CONTROL_1_Q30\",\"-\",\"-\",-,\"-\",-,-,$vcheckm,\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\"" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
+            
             conda deactivate
         fi
 
@@ -1545,7 +1597,7 @@ Antimicrobial(class),Gene_mut(resistance)"  > "${OUTPUT_PATH}/4_results/${DATE}_
         for varr in "${var_reset[@]}"
         do
             if [[ $varr == "vcheckm" ]]; then
-                eval "$varr='-,-,-,-,-,-,-,-,-,-,-,-'"
+                vcheckm="\"-\",-,-,-,\"-\",-,-,-,-,-,-,-,-"
             else
                 eval "$varr='-'"
             fi
