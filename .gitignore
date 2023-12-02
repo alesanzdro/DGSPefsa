@@ -1,0 +1,6 @@
+*.fastq.gz
+pipeline_mio.sh
+pipeline.sh.save
+sample_data
+INNUca
+resources

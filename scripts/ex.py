@@ -186,6 +186,12 @@ def update_table(selected_range, search_value):
     [Input('sample-selection', 'value'), 
      Input('table', 'derived_virtual_data')]
 )
+
+conda activate dgsp_efsa_dash
+cd /software/DGSPefsa/scripts
+python report_dash.py
+
+
 def update_heatmap(selected_samples, table_data):
     if not selected_samples or not table_data:
         return {
