@@ -18,13 +18,8 @@ rm v2.7.0.zip
 # Creamos ambientes CONDA
 ###################################################################################
 
-CONDAPATH="/software/miniconda3/envs"
-
-mamba env create -p ${CONDAPATH}/dgsp_efsa_sp -f envs/dgsp_efsa_sp.yml
-mamba env create -p ${CONDAPATH}/dgsp_efsa_report -f envs/dgsp_efsa_report.yml
-mamba env create -p ${CONDAPATH}/dgsp_efsa_dash -f envs/dgsp_efsa_dash.yml
-
-##checkm data setRoot /software/miniconda3/envs/dgsp_efsa_sp/checkm_data
+##################################################################### dgsp_efsa_sp2
+mamba env create -f dgsp_efsa_sp2.yml
 
 cd /software/miniconda3/envs/dgsp_efsa_sp/bin
 #wget https://github.com/nextflow-io/nextflow/releases/download/v0.26.0/nextflow
@@ -34,9 +29,6 @@ conda activate dgsp_efsa_sp
 cpanm XML::Simple
 prokka --setupdb
 
-confindr_database_setup
-
-# Y COPIAMOS Campylobacter_jejuni (aunque este es mlst)
 #Si hay problemas con las versiones y con otro Perl
 #% which -a perl
 #% perl -V | tail
@@ -46,34 +38,11 @@ confindr_database_setup
 
 #conda create -c bioconda checkm-genome=1.0.18 -n dgsp_efsa_checkm
 
-/software/miniconda3/envs/
+
 mamba env create -p /software/miniconda3/envs/dgsp_efsa_sp3 -f /ALMEIDA/PROJECTS/BACTERIAS/DGSP/envs-DGSPefsa/dgsp_efsa_sp.yml 
 
 
 conda install -c bioconda sistr_cmd
-
-
-##########################################
-016/tmp/pipeline/23_LMON_11883/INNUca/23_LMON_11883/23_LMON_11883.contigs.length_GCcontent_kmerCov.mappingCov.polished.fasta
-[09:29:51] This is mlst 2.23.0 running on linux with Perl 5.032001
-[09:29:51] Checking mlst dependencies:
-[09:29:51] Found 'blastn' => /software/miniconda3/envs/dgsp_efsa_contamination/bin/blastn
-[09:29:51] Found 'any2fasta' => /software/miniconda3/envs/dgsp_efsa_contamination/bin/any2fasta
-[09:29:51] Found blastn: 2.14.0+ (002014)
-[09:29:51] Excluding 3 schemes: vcholerae_2 ecoli abaumannii
-[09:29:51] Found exact allele match listeria_2.abcZ-6
-[09:29:51] Found exact allele match listeria_2.cat-6
-[09:29:51] Found exact allele match listeria_2.dapE-4
-[09:29:51] Found exact allele match listeria_2.bglA-5
-[09:29:51] Found exact allele match listeria_2.lhkA-1
-[09:29:51] Found exact allele match listeria_2.dat-1
-[09:29:51] Found exact allele match listeria_2.ldh-4
-/home/susana/DGSP/analysis_efsa/231215_LSPV016/tmp/pipeline/23_LMON_11883/INNUca/23_LMON_11883/23_LMON_11883.contigs.length_GCcontent_kmerCov.mappingCov.polished.fasta	listeria_2	9	abcZ(6)	bglA(5)	cat(6)	dapE(4)	dat(1)	ldh(4)	lhkA(1)
-[09:29:51] Found no novel intact alleles; will not create /home/susana/DGSP/analysis_efsa/231215_LSPV016/tmp/pipeline/23_LMON_11883/INNUca/23_LMON_11883/mlst_novel_alleles.fasta
-[09:29:51] Did you know mlst also works on .gbk and .gz files?
-[09:29:51] Done.
-(dgsp_efsa_contamination) susana@LSPVgenomica:~$ mlst --novel /home/susana/DGSP/analysis_efsa/231215_LSPV016/tmp/pipeline/23_LMON_11883/INNUca/23_LMON_11883/mlst_novel_alleles.fasta /home/susana/DGSP/analysis_efsa/231215_LSPV016/tmp/pipeline/23_LMON_11883/INNUca/23_LMON_11883/23_LMON_11883.contigs.length_GCcontent_kmerCov.mappingCov.polished.fasta
-
 
 
 

@@ -2,6 +2,8 @@
 
 # RESOURCES_PATH="/ALMEIDA/PROJECTS/BACTERIAS/DGSP/resources"
 
+
+
 # # Example of how to set the environment variable in the bash shell. Remember this is only temporary, if you want it set every time you log in you need to add this line to for example your .bashrc file.
 # export CGE_RESFINDER_RESGENE_DB=${RESOURCES_PATH}"/db_cge/resfinder"
 # export CGE_RESFINDER_RESPOINT_DB=${RESOURCES_PATH}"/db_cge/pointfinder"
@@ -39,7 +41,7 @@
 #https://onestopdataanalysis.com/checkm-completeness-contamination/
 #==============================================================================
 # NECESARIO MODIFICAR O TENER CONSTRUIDO
-#RUN="230331_LSPV005"
+#RUN="231219_LSPV017"
 RUN=$1
 SRUN=$(echo $RUN | awk -F "_" '{print $2}')
 
@@ -47,7 +49,7 @@ INPUT_PATH="/home/susana/DGSP/RAW"
 OUTPUT_PATH="/home/susana/DGSP/analysis_efsa/"${RUN}
 RESOURCES="/software/resources"
 EFSA_PATH="/software/DGSPefsa"
-THREADS=14
+THREADS=10
 MASTER_CONTROL="CONTINUE"
 
 
@@ -152,28 +154,13 @@ echo -e "\"Sample\",\"Fq1\",\"Fq2\",\"Expected_sp\",\"Genome_size\",\"Min_genome
     while IFS=, read -r sample fastq_1 fastq_2; do
         echo "$sample FASTQ1: $fastq_1 FASTQ2: $fastq_2"
 
-        # sample="17_STEC_10960"
-        # fastq_1="17_STEC_10960_S65_R1_001.fastq.gz"
-        # fastq_2="17_STEC_10960_S65_R2_001.fastq.gz"
-        # sample="22_LMON_07334"
-        # fastq_1="22_LMON_07334_S49_R1_001.fastq.gz"
-        # fastq_2="22_LMON_07334_S49_R2_001.fastq.gz"
-        # sample="22_SALM_01804"
-        # fastq_1="22_SALM_01804_S67_R1_001.fastq.gz"
-        # fastq_2="22_SALM_01804_S67_R2_001.fastq.gz"
-        # sample="23_CAMP_01451"
-        # fastq_1="23_CAMP_01451_S43_R1_001.fastq.gz"
-        # fastq_2="23_CAMP_01451_S43_R1_001.fastq.gz"
-        
-        #sample="22_SALM_10116"
-        #fastq_1="22_SALM_10116_S76_R1_001.fastq.gz"
-        #fastq_2="22_SALM_10116_S76_R2_001.fastq.gz"
-        
-        #sample="22_SALM_10116"
-        #fastq_1="22_SALM_10116_S76_R1_001.fastq.gz"
-        #fastq_2="22_SALM_10116_S76_R2_001.fastq.gz"
 
-        #22_SALM_15935	22_SALM_15935_S17_R1_001.fastq.gz	22_SALM_15935_S17_R2_001.fastq.gz
+        #sample="23_LMON_11886"
+        #fastq_1="23_LMON_11886_S27_R1_001.fastq.gz"
+        #fastq_2="23_LMON_11886_S27_R2_001.fastq.gz"
+
+
+
 
 
 
@@ -341,7 +328,7 @@ echo -e "\"Sample\",\"Fq1\",\"Fq2\",\"Expected_sp\",\"Genome_size\",\"Min_genome
 
             # Verificar si el directorio existe después del intento 1
             if [ ! -d ${OUTPUT_PATH}/tmp/pipeline/${sample}/BACTpipe_results/shovill/ ]; then
-            	sleep 5
+                sleep 5
                 # Intento 2
                 nextflow-20.10.0-all run ${RESOURCES}/BACTpipe-2.7.0/bactpipe.nf \
                 --mashscreen_database ${PATHMASH} \
@@ -497,16 +484,24 @@ echo -e "\"Sample\",\"Fq1\",\"Fq2\",\"Expected_sp\",\"Genome_size\",\"Min_genome
                 #• S. enterica: 7
                 #• L. monocytogenes: 3
                 #• E.coli: 4
-                if (($(echo "$C3_warning > $VAR_C3_SNV" | bc -l))); then
+                if [[ $(echo "$C3_warning > $VAR_C3_SNV" | bc -l) -eq 1 && "$MASTER_CONTROL" != "CONTINUE" ]]; then
+
                     echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                     echo "========================================" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                     echo "WARNING!" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                     echo "ConFindr show SNV contamination" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                     echo "========================================" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
-                else
+                elif [[ $(echo "$C3_warning > $VAR_C3_SNV" | bc -l) -eq 1 || "$MASTER_CONTROL" == "CONTINUE" ]]; then
+                    if (($(echo "$C3_warning > $VAR_C3_SNV" | bc -l))); then
+                        echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                        echo "========================================" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                        echo "WARNING!" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                        echo "ConFindr show SNV contamination" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                        echo "========================================" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                    fi
+                    echo "REPOL1"
                     repinnuca=$(ls -t ${OUTPUT_PATH}/tmp/pipeline/${sample}/INNUca/samples_report.* | head -n 1)
                     C3_innuca=$(awk -F "\t" '{print $15}' $repinnuca | tail -n 1)
-
 
                     if [[ (( "$C3_confindr" == "False" && ( "$C3_innuca" == "PASS" || "$C3_innuca" == "WARNING" )))  || ( "$MASTER_CONTROL" == "CONTINUE" ) ]]; then
                         if [[ "$C3_confindr" = "False" ]] && { [[ "$C3_innuca" = "PASS" ]] || [[ "$C3_innuca" = "WARNING" ]]; }; then
@@ -516,7 +511,7 @@ echo -e "\"Sample\",\"Fq1\",\"Fq2\",\"Expected_sp\",\"Genome_size\",\"Min_genome
                         fi
 
                         printf 'STATUS: %s\n' "$CONTROL_3_CONT" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
-
+                        echo "REPOL2"
                         ##########################################################
                         #
                         # 05 Assembly
@@ -714,16 +709,26 @@ echo -e "\"Sample\",\"Fq1\",\"Fq2\",\"Expected_sp\",\"Genome_size\",\"Min_genome
                         # Eliminar el último ','
                         #vcheckm=${vcheckm%?}
 
+                        if [[ ($(echo "$C4_completeness < $VAR_C4_COMPLETENESS" | bc -l) -eq 1 || $(echo "$C4_contamination > $VAR_C4_CONTAMINATION" | bc -l) -eq 1) && "$MASTER_CONTROL" != "CONTINUE" ]]; then
 
-                        if (($(echo "$C4_completeness < $VAR_C4_COMPLETENESS" | bc -l))) || (($(echo "$C4_contamination > $VAR_C4_CONTAMINATION" | bc -l))); then
                             CONTROL4_CHECKM="FAIL"
                             echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                             echo "========================================" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                             echo "WARNING!" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                             echo "CHECKM control has not passed" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
                             echo "========================================" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
-                        else
-                            CONTROL4_CHECKM="PASS"
+                        elif [[ ($(echo "$C4_completeness < $VAR_C4_COMPLETENESS" | bc -l) -eq 1 || $(echo "$C4_contamination > $VAR_C4_CONTAMINATION" | bc -l) -eq 1) || "$MASTER_CONTROL" == "CONTINUE" ]]; then
+                            if (($(echo "$C4_completeness < $VAR_C4_COMPLETENESS" | bc -l))) || (($(echo "$C4_contamination > $VAR_C4_CONTAMINATION" | bc -l))); then
+                                CONTROL4_CHECKM="FAIL"
+                                echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                                echo "========================================" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                                echo "WARNING!" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                                echo "CHECKM control has not passed" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                                echo "========================================" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
+                            else
+                                CONTROL4_CHECKM="PASS"
+                            fi
+
                             printf 'STATUS: %s\n' "$CONTROL4_CHECKM" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
 
                             C4_genome_size=$(grep "out_genome_size_(Mbp)_mean" ${OUTPUT_PATH}/tmp/pipeline/${sample}/checkm/${sample}_checkm.tsv | awk '{print $2}')
@@ -738,8 +743,9 @@ echo -e "\"Sample\",\"Fq1\",\"Fq2\",\"Expected_sp\",\"Genome_size\",\"Min_genome
                                 C4_genome_size_control="FAIL"
                             fi
 
+                            if (($(echo "$C4_N50 < 30000" | bc -l))) || (($(echo "$C4_contigs > $VAR_C4_CONTIGS" | bc -l))) || [[ "$C3_confindr" = "True" ]] || [[ "$C4_genome_size_control" = "FAIL" ]] || [[ -z "$C4_N50" ]] || [[ -z "$C4_contigs" ]] || [[ -z "$C3_confindr" ]] || [[ -z "$C4_genome_size_control" ]]; then
 
-                            if (($(echo "$C4_N50 < 30000" | bc -l))) || (($(echo "$C4_contigs > $VAR_C4_CONTIGS" | bc -l))) || [[ "$C3_confindr" = "True" ]] || [[ "$C4_genome_size_control" = "FAIL" ]]; then
+                            #if (($(echo "$C4_N50 < 30000" | bc -l))) || (($(echo "$C4_contigs > $VAR_C4_CONTIGS" | bc -l))) || [[ "$C3_confindr" = "True" ]] || [[ "$C4_genome_size_control" = "FAIL" ]]; then
                                 CONTROL4_CHECKM_quality="ASSEMBLY_QUALITY: BAD"
                                 vCONTROL4_CHECKM_quality="BAD"
 
@@ -928,7 +934,7 @@ echo -e "\"Sample\",\"Fq1\",\"Fq2\",\"Expected_sp\",\"Genome_size\",\"Min_genome
                                 ${PATHARIBA}/Salmonella_enterica/ref_db \
                                 ${OUTPUT_PATH}/0_fastq/${sample}_1.fastq.gz ${OUTPUT_PATH}/0_fastq/${sample}_2.fastq.gz \
                                 ${OUTPUT_PATH}/3_typing/PLUS/ariba/${sample} \
-			                    > ${OUTPUT_PATH}/log/ariba/${sample}.log 2>&1
+                                > ${OUTPUT_PATH}/log/ariba/${sample}.log 2>&1
 
                                 #---------------------------------------------------------
                                 # 05.4  Allele calling
@@ -1136,7 +1142,7 @@ echo -e "\"Sample\",\"Fq1\",\"Fq2\",\"Expected_sp\",\"Genome_size\",\"Min_genome
                                 ${PATHARIBA}/Listeria_monocytogenes/ref_db \
                                 ${OUTPUT_PATH}/0_fastq/${sample}_1.fastq.gz ${OUTPUT_PATH}/0_fastq/${sample}_2.fastq.gz \
                                 ${OUTPUT_PATH}/3_typing/PLUS/ariba/${sample} \
-			                    > ${OUTPUT_PATH}/log/ariba/${sample}.log 2>&1
+                                > ${OUTPUT_PATH}/log/ariba/${sample}.log 2>&1
 
                                 #---------------------------------------------------------
                                 # 05.4  Allele calling
@@ -1392,7 +1398,7 @@ echo -e "\"Sample\",\"Fq1\",\"Fq2\",\"Expected_sp\",\"Genome_size\",\"Min_genome
                                 ${PATHARIBA}/Escherichia_coli1/ref_db \
                                 ${OUTPUT_PATH}/0_fastq/${sample}_1.fastq.gz ${OUTPUT_PATH}/0_fastq/${sample}_2.fastq.gz \
                                 ${OUTPUT_PATH}/3_typing/PLUS/ariba/${sample}_ecoli1 \
-			                    > ${OUTPUT_PATH}/log/ariba/${sample}_ecoli1.log 2>&1
+                                > ${OUTPUT_PATH}/log/ariba/${sample}_ecoli1.log 2>&1
 
 
                                 docker run --cpus ${THREADS} --rm -u "$(id -u)":"$(id -g)" -v ${OUTPUT_PATH}:${OUTPUT_PATH} -v ${PATHARIBA}:${PATHARIBA} staphb/ariba:latest \
@@ -1401,7 +1407,7 @@ echo -e "\"Sample\",\"Fq1\",\"Fq2\",\"Expected_sp\",\"Genome_size\",\"Min_genome
                                 ${PATHARIBA}/Escherichia_coli2/ref_db \
                                 ${OUTPUT_PATH}/0_fastq/${sample}_1.fastq.gz ${OUTPUT_PATH}/0_fastq/${sample}_2.fastq.gz \
                                 ${OUTPUT_PATH}/3_typing/PLUS/ariba/${sample}_ecoli2 \
-			                    > ${OUTPUT_PATH}/log/ariba/${sample}_ecoli2.log 2>&1
+                                > ${OUTPUT_PATH}/log/ariba/${sample}_ecoli2.log 2>&1
 
                                 #---------------------------------------------------------
                                 # 05.4  Allele calling
@@ -1558,7 +1564,7 @@ echo -e "\"Sample\",\"Fq1\",\"Fq2\",\"Expected_sp\",\"Genome_size\",\"Min_genome
                                 ${PATHARIBA}/Campylobacter_jejuni/ref_db \
                                 ${OUTPUT_PATH}/0_fastq/${sample}_1.fastq.gz ${OUTPUT_PATH}/0_fastq/${sample}_2.fastq.gz \
                                 ${OUTPUT_PATH}/3_typing/ariba/${sample} \
-			                    > ${OUTPUT_PATH}/log/ariba/${sample}.log 2>&1
+                                > ${OUTPUT_PATH}/log/ariba/${sample}.log 2>&1
 
                                 #echo -e "$sample,$fastq_1,$fastq_2,$VAR_C2_SPE,$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,$CONTROL_1_Q30,$C2_SPE,$CONTROL_2_BACT,$C3_warning,$CONTROL_3_CONT,$VAR_C4_COMPLETENESS,$VAR_C4_CONTAMINATION,$vcheckm,$CONTROL4_CHECKM,$vCONTROL4_CHECKM_quality,$STVAR,$MLST,$STANTI,$STPATHO,$ST_CGMLST,$ST_H1,$ST_H2,$ST_O_antigen,$SEROVAR,$RESFINDER_GENES,$RESFINDER_RESISTANT,$RESFINDER_MUTS" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
                                 echo -e "\"$sample\",\"$fastq_1\",\"$fastq_2\",\"$VAR_C2_SPE\",$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,\"$CONTROL_1_Q30\",\"$C2_SPE\",\"$CONTROL_2_BACT\",$C3_warning,\"$CONTROL_3_CONT\",$VAR_C4_COMPLETENESS,$VAR_C4_CONTAMINATION,$vcheckm,\"$CONTROL4_CHECKM\",\"$vCONTROL4_CHECKM_quality\",\"$STVAR\",\"$MLST\",\"$STANTI\",\"$STPATHO\",\"$ST_CGMLST\",\"$ST_H1\",\"$ST_H2\",\"$ST_O_antigen\",\"$SEROVAR\",\"$RESFINDER_GENES\",\"$RESFINDER_RESISTANT\",\"$RESFINDER_MUTS\"" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
@@ -1573,7 +1579,7 @@ echo -e "\"Sample\",\"Fq1\",\"Fq2\",\"Expected_sp\",\"Genome_size\",\"Min_genome
                         CONTROL_3_CONT="FAIL"
                         vcheckm="\"-\",-,-,-,\"-\",-,-,-,-,-,-,-,-"
                         echo -e "\"$sample\",\"$fastq_1\",\"$fastq_2\",\"$VAR_C2_SPE\",$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,\"$CONTROL_1_Q30\",\"$C2_SPE\",\"$CONTROL_2_BACT\",$C3_warning,\"$CONTROL_3_CONT\",$VAR_C4_COMPLETENESS,$VAR_C4_CONTAMINATION,$vcheckm,\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\"" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
-			
+
                         conda deactivate
                         
                     fi
@@ -1595,7 +1601,7 @@ echo -e "\"Sample\",\"Fq1\",\"Fq2\",\"Expected_sp\",\"Genome_size\",\"Min_genome
             echo "****************************************" | tee -a ${OUTPUT_PATH}/log/efsa/${sample}.log
             # Si no se ejecuta checkm, tenemos que añadir los 12 campos vacios, para no tener problemas con el número de columnas finales
             CONTROL_1_Q30="FAIL"
-	    vcheckm="\"-\",-,-,-,\"-\",-,-,-,-,-,-,-,-"
+            vcheckm="\"-\",-,-,-,\"-\",-,-,-,-,-,-,-,-"
             echo -e "\"$sample\",\"$fastq_1\",\"$fastq_2\",\"$VAR_C2_SPE\",$VAR_C3_GENOME,$VAR_C4_GENOME_MIN,$VAR_C4_GENOME_MAX,$VAR_C3_SNV,$VAR_C4_CONTIGS,$VAR_C1_LENGTH,$BASESQ30,$COVQ30,$VALUEQ30,\"$CONTROL_1_Q30\",\"-\",\"-\",-,\"-\",-,-,$vcheckm,\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\",\"-\"" >> "${OUTPUT_PATH}/4_results/${DATE}_summary_${RUN}.csv"
             
             conda deactivate
